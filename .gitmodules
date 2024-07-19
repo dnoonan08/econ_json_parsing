@@ -1,0 +1,3 @@
+[submodule "TID_scripts/tid-july-2024"]
+	path = TID_scripts/tid-july-2024
+	url = git@github.com:mstamenk/tid-july-2024.git
