@@ -189,3 +189,45 @@ if __name__ == '__main__':
         ax.label_outer()
 
     fig.savefig(f'{plots}/ob_bist.png', dpi=300, facecolor="w") 
+
+    ppMin = []
+    for j in range(4):
+        temp3 = []
+        for i in range(len(ppResults)):
+            if len(bist_voltages[np.argwhere((ppResults[i,:,j] < 4095))]) != 0:
+                temp3.append(bist_voltages[np.argwhere((ppResults[i,:,j] < 4095))[0][0]])
+            else:
+                temp3.append(0)
+        ppMin.append(temp3)
+
+    fig,axs=plt.subplots(figsize=(45,12),ncols=4,nrows=1, layout="constrained")
+    for i in range(4):
+        axs[i].plot(ppBIST[1.0]['mRadDose'], ppMin[i])
+        axs[i].set_xlabel("TID (MRad)")
+        axs[i].set_ylabel("Voltage (V)")
+        axs[i].set_title(f"PP Minimum Failing Voltage Test {i+1}")
+    for ax in axs.flat:
+        ax.label_outer()
+
+    fig.savefig(f'{plots}/pp_min_fail.png', dpi=300, facecolor="w")
+
+    obMin = []
+    for j in range(4):
+        temp4 = []
+        for i in range(len(obResults)):
+            if len(bist_voltages[np.argwhere((obResults[i,:,j] < 4095))]) != 0:
+                temp4.append(bist_voltages[np.argwhere((obResults[i,:,j] < 4095))[0][0]])
+            else:
+                temp4.append(0)
+        obMin.append(temp4)
+
+    fig,axs=plt.subplots(figsize=(45,12),ncols=4,nrows=1, layout="constrained")
+    for i in range(4):
+        axs[i].plot(obBIST[1.0]['mRadDose'], obMin[i])
+        axs[i].set_xlabel("TID (MRad)")
+        axs[i].set_ylabel("Voltage (V)")
+        axs[i].set_title(f"OB Minimum Failing Voltage Test {i+1}")
+    for ax in axs.flat:
+        ax.label_outer()
+
+    fig.savefig(f'{plots}/ob_min_fail.png', dpi=300, facecolor="w") 
