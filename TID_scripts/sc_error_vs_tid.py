@@ -8,7 +8,7 @@ import matplotlib.scale
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-def getSCErrors(data, voltage,starttime):
+def getSCErrors(data, voltage, starttime):
     scErrors = []
     scWordCounts = []
     Timestamps = []
@@ -18,16 +18,66 @@ def getSCErrors(data, voltage,starttime):
             if 'metadata' in data[i]['tests'][j]:
                 if f"test_TID.py::test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
                     info = np.array(data[i]['tests'][j]['metadata']['word_err_count'])
-                    scErrors.append([int(x) for x in info[:,2]])
-                    scWordCounts.append([int(x) for x in info[:,1]])
-                    Timestamps.append(info[:,0])
-                    hasL1As.append(data[i]['tests'][j]['metadata']['HasL1A'])
-    scError = np.array([x for xs in scErrors for x in xs])
-    scWordCount = np.array([x for xs in scWordCounts for x in xs])
-    hasL1A = np.array([x for xs in hasL1As for x in xs])
-    Timestamp = np.array([x for xs in Timestamps for x in xs])
-    mradDose = Timestamp2MRad(Timestamp,starttime)
-    return scError, scWordCount, hasL1A, mradDose
+                    scErrors.append(np.array([int(x) for x in info[:,2]]))
+                    scWordCounts.append(np.array([int(x) for x in info[:,1]]))
+                    Timestamps.append(np.array(info[:,0]))
+                    hasL1As.append(np.array(data[i]['tests'][j]['metadata']['HasL1A']))
+    indexesErrCnt = [[j for j in range(len(scErrors[i])-1) if scErrors[i][j] > scErrors[i][j+1]] for i in range(len(scErrors))]
+    indexesWordCnt = [[j for j in range(len(scWordCounts[i])-1) if scWordCounts[i][j] > scWordCounts[i][j+1]] for i in range(len(scWordCounts))]
+    for i in range(len(scWordCounts)):
+        for j in range(len(scWordCounts[i])):
+            if len(indexesWordCnt[i]) != 0:
+                if j > indexesWordCnt[i][0]:
+                    scWordCounts[i][j] = (scWordCounts[i][j] + (2**32-1))
+    for i in range(len(scErrors)):
+        for j in range(len(scErrors[i])):
+            if len(indexesErrCnt[i]) != 0:
+                if j > indexesErrCnt[i][0]:
+                    scErrors[i][j] = (scErrors[i][j] + (2**32-1))
+    totalWords0 = []
+    totalWords7 = []
+    totalWords67 = []
+    for i in range(len(scWordCounts)):
+        x1 = scWordCounts[i][hasL1As[i]==0]
+        x2 = scWordCounts[i][hasL1As[i]==7] - scWordCounts[i][hasL1As[i]==0][-1]
+        x3 = scWordCounts[i][hasL1As[i]==67] - scWordCounts[i][hasL1As[i]==7][-1]
+        totalWords0.append(x1[-1])
+        totalWords7.append(x2[-1])
+        totalWords67.append(x3[-1])
+    totalWords0 = np.array(totalWords0)
+    totalWords7 = np.array(totalWords7)
+    totalWords67 = np.array(totalWords67)
+    totalErrs0 = []
+    totalErrs7 = []
+    totalErrs67 = []
+    for i in range(len(scErrors)):
+        x1 = scErrors[i][hasL1As[i]==0]
+        x2 = scErrors[i][hasL1As[i]==7] - scErrors[i][hasL1As[i]==0][-1]
+        x3 = scErrors[i][hasL1As[i]==67] - scErrors[i][hasL1As[i]==7][-1]
+        totalErrs0.append(x1[-1])
+        totalErrs7.append(x2[-1])
+        totalErrs67.append(x3[-1])
+    totalErrs0 = np.array(totalErrs0)
+    totalErrs7 = np.array(totalErrs7)
+    totalErrs67 = np.array(totalErrs67)
+    errRate0 = totalErrs0/totalWords0
+    errRate7 = totalErrs7/totalWords7
+    errRate67 = totalErrs67/totalWords67
+    mradDose0 = []
+    mradDose7 = []
+    mradDose67 = []
+    for i in range(len(Timestamps)):
+        x1 = Timestamp2MRad(Timestamps[i][hasL1As[i]==0],starttime)
+        x2 = Timestamp2MRad(Timestamps[i][hasL1As[i]==7],starttime)
+        x3 = Timestamp2MRad(Timestamps[i][hasL1As[i]==67],starttime)
+        mradDose0.append(x1[-1])
+        mradDose7.append(x2[-1])
+        mradDose67.append(x3[-1])
+    mradDose0 = np.array(mradDose0)
+    mradDose7 = np.array(mradDose7)
+    mradDose67 = np.array(mradDose67)
+    
+    return errRate0, errRate7, errRate67, mradDose0, mradDose7, mradDose67
 
 if __name__ == '__main__':
     # argument parser
@@ -46,46 +96,43 @@ if __name__ == '__main__':
 
     scErrors = {
     volt: {
-        "scErrors": getSCErrors(data, volt,starttime)[0],
-        "scWordCount": getSCErrors(data, volt,starttime)[1],
-        "hasL1A": getSCErrors(data, volt,starttime)[2],
-        "mradDose": getSCErrors(data, volt,starttime)[3],
+        "errRate0": getSCErrors(data, volt,starttime)[0],
+        "errRate7": getSCErrors(data, volt,starttime)[1],
+        "errRate67": getSCErrors(data, volt, starttime)[2],
+        "mradDose0": getSCErrors(data, volt, starttime)[3],
+        "mradDose7": getSCErrors(data, volt, starttime)[4],
+        "mradDose67": getSCErrors(data, volt, starttime)[5],
     } for volt in voltages
 }
     # Plotting
 
     plots = create_plot_path(args.path+ '/' + 'sc_error_vs_tid_plots')
 
-    fig,axs=plt.subplots(figsize=(45,12),ncols=7,nrows=3, layout="constrained")
-    for i, (volts) in enumerate(voltages):
-        for j in range(3):
-            if j==2:
-                axs[j,i].scatter(scErrors[volts]["mradDose"][scErrors[volts]["hasL1A"]==1], (scErrors[volts]["scErrors"]/scErrors[volts]["scWordCount"])[scErrors[volts]["hasL1A"]==1], label = "errors w l1a", color = "r") 
-                axs[j,i].scatter(scErrors[volts]["mradDose"][scErrors[volts]["hasL1A"]==0], (scErrors[volts]["scErrors"]/scErrors[volts]["scWordCount"])[scErrors[volts]["hasL1A"]==0], label = "errors w/o l1a",facecolors='none', edgecolors='b')
-                axs[j,i].set_ylabel("Error Rate")
-                axs[j,i].set_xlabel("TID (MRad)")
-                axs[j,i].set_title(f"{volts} V")
-                #axs[i,j].set_yscale("log")
-                # axs[i,j].set_ylim((1e-8,1.1))
-                # axs[i,j].set_xlim(0,660)
-            if j==1:
-                axs[j,i].scatter(scErrors[volts]["mradDose"][scErrors[volts]["hasL1A"]==1], (scErrors[volts]["scWordCount"])[scErrors[volts]["hasL1A"]==1], label = "errors w l1a", color = "r") 
-                axs[j,i].scatter(scErrors[volts]["mradDose"][scErrors[volts]["hasL1A"]==0], (scErrors[volts]["scWordCount"])[scErrors[volts]["hasL1A"]==0], label = "errors w/o l1a",facecolors='none', edgecolors='b')
-                axs[j,i].set_ylabel("Word Count")
-                axs[j,i].set_xlabel("TID (MRad)")
-                axs[j,i].set_title(f"{volts} V")
-                #axs[i,j].set_yscale("log")
-                # axs[i,j].set_ylim((1e-8,1.1))
-                # axs[i,j].set_xlim(0,660)
-            if j==0:
-                axs[j,i].scatter(scErrors[volts]["mradDose"][scErrors[volts]["hasL1A"]==1], (scErrors[volts]["scErrors"])[scErrors[volts]["hasL1A"]==1], label = "errors w l1a", color = "r") 
-                axs[j,i].scatter(scErrors[volts]["mradDose"][scErrors[volts]["hasL1A"]==0], (scErrors[volts]["scErrors"])[scErrors[volts]["hasL1A"]==0], label = "errors w/o l1a",facecolors='none', edgecolors='b')
-                axs[j,i].set_ylabel("Error Count")
-                axs[j,i].set_xlabel("TID (MRad)")
-                axs[j,i].set_title(f"{volts} V")
-                #axs[i,j].set_yscale("log")
-                # axs[i,j].set_ylim((1e-8,1.1))
-                # axs[i,j].set_xlim(0,660)
+    fig,axs=plt.subplots(figsize=(70,12),ncols=7,nrows=1, layout="constrained")
+    for i, (volt) in enumerate(voltages):
+        axs[i].scatter(scErrors[volt]["mradDose0"], scErrors[volt]["errRate0"])
+        axs[i].scatter(scErrors[volt]["mradDose7"], scErrors[volt]["errRate7"])
+        axs[i].scatter(scErrors[volt]["mradDose67"], scErrors[volt]["errRate67"])
+        axs[i].set_title(f"{volt}")
+        axs[i].set_ylabel('Error Rate')
+        axs[i].set_xlabel('TID (MRad)')
+        axs[i].set_yscale('log')
+        # set these limits later
+        axs[i].set_ylim(10**-11,1)
+        # axs[i].set_xlim(0,660)
     for ax in axs.flat:
         ax.label_outer()
     fig.savefig(f'{plots}/summary_word_err_err_rate_results.png')
+    
+    titles = ['08', '11', '14', '20', '26', '29', '32']
+    for i, (volt) in enumerate(voltages):
+        plt.scatter(scErrors[volt]["mradDose0"], scErrors[volt]["errRate0"])
+        plt.scatter(scErrors[volt]["mradDose7"], scErrors[volt]["errRate7"])
+        plt.scatter(scErrors[volt]["mradDose67"], scErrors[volt]["errRate67"])
+        plt.title(f"{volt}V")
+        plt.ylabel('Error Rate')
+        plt.xlabel("TID (MRad)")
+        plt.ylim(10**-11,1)
+        plt.yscale('log')
+        plt.savefig(f'{plots}/err_rate_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
+        plt.clf()
