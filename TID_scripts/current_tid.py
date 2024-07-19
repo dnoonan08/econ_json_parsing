@@ -32,12 +32,12 @@ if __name__ == '__main__':
     # argument parser
     import argparse
     parser = argparse.ArgumentParser(description='Args')
-    parser.add_argument('--repo', default = 'tid-july-2024') # JSON repo on github
+    parser.add_argument('--path', type = str) # repo name on github json repo
     parser.add_argument('--chip', default = 'chip003') # repo name on github json repo
     args = parser.parse_args()
 
     # Path to JSONs
-    path = MYROOT + '/' + args.repo + '/' + args.chip + '/'
+    path = args.path + '/' + args.chip + '/'
     print(f"Running on {path}")
 
     # Fetch JSON data and startime of first JSON
