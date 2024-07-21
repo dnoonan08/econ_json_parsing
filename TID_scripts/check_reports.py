@@ -10,6 +10,8 @@ import matplotlib.scale
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
+import os
+
 def checkReports(data, voltage):
     fails = []
     for i in range(len(data)):
@@ -30,6 +32,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Args')
     parser.add_argument('--path', type = str) # repo name on github json repo
     parser.add_argument('--chip', default = 'chip003') # repo name on github json repo
+    parser.add_argument('--remove', action = 'store_true') # repo name on github json repo
     args = parser.parse_args()
 
     # Path to JSONs
@@ -51,5 +54,11 @@ if __name__ == '__main__':
     for key, value in Checks.items():
         print(key)
         print(value)
+
+        if args.remove:
+            for el in value['Fails']:
+                cmd = 'rm %s'%el
+                print(cmd)
+                os.system(cmd)
 
     

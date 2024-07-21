@@ -53,7 +53,20 @@ if __name__ == '__main__':
 
     # Plotting
 
-    plots = create_plot_path('current_vs_tid')
+    plots = create_plot_path(args.path+ '/' + 'current_vs_tid_plots')
+
+    titles = ['08', '11', '14', '20', '26', '29', '32']
+    for i, (volt) in enumerate(voltages):
+        plt.scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==0], currents[volt]["current"][currents[volt]["hasL1A"]==0], label = 'No L1As')
+        plt.scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==7], currents[volt]["current"][currents[volt]["hasL1A"]==7], label = '7 L1As per Orbit')
+        plt.scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==67], currents[volt]["current"][currents[volt]["hasL1A"]==67], label = '67 L1As per Orbit')
+        plt.title(f"{volt}V")
+        plt.ylabel("Current (A)")
+        plt.xlabel("TID (MRad)")
+        plt.ylim(0.15,0.41)
+        plt.legend()
+        plt.savefig(f'{plots}/current_vs_tid_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
+        plt.clf()
 
     fig,axs=plt.subplots(figsize=(70,12),ncols=7,nrows=1, layout="constrained")
     for i, (volt) in enumerate(voltages):
@@ -69,20 +82,10 @@ if __name__ == '__main__':
         # axs[i].set_xlim(0,660) 
     for ax in axs.flat:
         ax.label_outer()   
-    fig.savefig(f'{plots}/current_vs_tid_results.png', dpi=300, facecolor="w") 
+    fig.savefig(f'{plots}/summary_current_vs_tid_results.png', dpi=300, facecolor="w") 
+    
+    print("Done producing current vs TID plots!")
 
-    titles = ['08', '11', '14', '20', '26', '29', '32']
-    for i, (volt) in enumerate(voltages):
-        plt.scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==0], currents[volt]["current"][currents[volt]["hasL1A"]==0], label = 'No L1As')
-        plt.scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==7], currents[volt]["current"][currents[volt]["hasL1A"]==7], label = '7 L1As per Orbit')
-        plt.scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==67], currents[volt]["current"][currents[volt]["hasL1A"]==67], label = '67 L1As per Orbit')
-        plt.title(f"{volt}V")
-        plt.ylabel("Current (A)")
-        plt.xlabel("TID (MRad)")
-        plt.ylim(0.15,0.41)
-        plt.legend()
-        plt.savefig(f'{plots}/current_measurement_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
-        plt.clf()
 
 
 

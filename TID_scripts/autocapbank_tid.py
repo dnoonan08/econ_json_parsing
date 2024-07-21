@@ -52,6 +52,7 @@ if __name__ == '__main__':
         } for volt in voltages
     }
 
+
     # Plotting
 
     plots = create_plot_path(args.path+ '/' + 'autocapbank_vs_tid_plots')
@@ -66,7 +67,6 @@ if __name__ == '__main__':
         plt.savefig(f'{plots}/automatic_capbank_selection_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
         plt.clf()
 
-    
     fig,axs=plt.subplots(figsize=(70,12),ncols=7,nrows=1, layout="constrained")
     for i, (volt) in enumerate(voltages):
         axs[i].scatter(AutomaticCapbank[volt]["mradDose"], AutomaticCapbank[volt]["AutomaticCapbank"])

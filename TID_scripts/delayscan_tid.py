@@ -19,7 +19,10 @@ def getDelayScanData(data, voltage):
                     bitCounts.append(data[i]['tests'][j]['metadata']['eTX_bitcounts'])
     errCounts = np.array(errCounts)
     bitCounts = np.array(bitCounts)
-    errRate = errCounts/bitCounts
+    if bitCounts > 0:
+        errRate = errCounts/bitCounts
+    else:
+        errRate = 0
     mradDose = FNames2MRad(fnames)
     dosePlots = np.array(list(mradDose)+[(mradDose[-1]-mradDose[-2])+mradDose[-1]])
     return errRate, dosePlots, mradDose

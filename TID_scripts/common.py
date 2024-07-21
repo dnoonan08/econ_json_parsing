@@ -41,6 +41,9 @@ def get_data(path_to_json):
     data = [jsonload(fname) for fname in fnames]
     return data, startTime
 
+def get_fnames(path_to_json):
+    return list(np.sort(glob.glob(f"{path_to_json}/report*.json")))
+
 
 
 def Timestamp2MRad(input, startTime):
@@ -51,8 +54,18 @@ def Timestamp2MRad(input, startTime):
     delTimes = np.array(delTimes)
     delTimes = delTimes/timedelta(minutes=1)
     rad_dose = 9.2/60
-    megarad_dose = rad_dose*delTimes
+    megarad_dose = rad_dose*delTimes - 60 # offset
     return megarad_dose
+
+def Timestamp2XrayBool(input):
+    #Example
+    #Timestamp2MRad(data[0]['tests'][0]['metadata']['Timestamp'])
+    goodTimes = np.array([datetime.strptime(x, "%Y-%m-%d %H:%M:%S.%f") for x in input])
+
+    xrays = []
+    for el in goodTimes:
+        xrays.append(get_xray_bool(el))
+    return np.array(xrays)
 
 
 def FNames2MRad(fnames):
@@ -69,7 +82,7 @@ def FNames2MRad(fnames):
     delTimes = np.array(delTimes)
     delTimes = delTimes/timedelta(minutes=1)
     rad_dose = 9.2/60
-    megarad_dose = rad_dose*delTimes
+    megarad_dose = rad_dose*delTimes - 60
     return megarad_dose
 
 
@@ -79,5 +92,26 @@ def create_plot_path(path):
     return path
 
 
+# d = datetime.date(2022, 12, 25) example date
 
+xray_times = {'start' : [datetime(2024,7,18,20,55),datetime(2024,7,19,18,21)], 
+              'end' : [datetime(2024,7,19,15,49)], 
+}
 
+# function to get if run is during x-ray or not
+
+def get_xray_bool(timestamp):
+    xray_bool = False
+    start_times = xray_times['start']
+    end_times = xray_times['end']
+
+    for i in range(len(end_times)):
+        start = start_times[i]
+        end = end_times[i]
+        if (timestamp > start)&(timestamp < end): xray_bool = True
+
+    if len(start_times) == len(end_times) + 1: # should always be the same or 1 more
+        start = start_times[-1]
+        if timestamp > start: xray_bool = True
+
+    return xray_bool
