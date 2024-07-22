@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     # Plotting
 
-    plots = create_plot_path(args.path+ '/' + 'bist_vs_tid_plots')
+    plots = create_plot_path(args.path+ '/' + 'bist_vs_tid_plots-%s'%args.chip)
 
 
     bist_voltages = np.arange(0.9,1.20,0.01)

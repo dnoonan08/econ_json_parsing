@@ -120,7 +120,6 @@ if __name__ == '__main__':
         plt.savefig(f'{plots}/err_rate_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
         plt.clf()
         
->>>>>>> d299c66bdbb458f99d12e4b640d4e9f06d6a9b74
     fig,axs=plt.subplots(figsize=(70,12),ncols=7,nrows=1, layout="constrained")
     for i, (volt) in enumerate(voltages):
         axs[i].scatter(scErrors[volt]["mradDose0"], scErrors[volt]["errRate0"])

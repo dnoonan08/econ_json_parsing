@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     # Plotting
 
-    plots = create_plot_path(args.path+ '/' + 'current_vs_tid_plots')
+    plots = create_plot_path(args.path+ '/' + 'current_vs_tid_plots-%s'%args.chip)
 
     titles = ['08', '11', '14', '20', '26', '29', '32']
     for i, (volt) in enumerate(voltages):

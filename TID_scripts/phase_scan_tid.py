@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     # Plotting
 
-    plots = create_plot_path(args.path+ '/' + 'phasescan_vs_tid_plots')
+    plots = create_plot_path(args.path+ '/' + 'phasescan_vs_tid_plots-%s'%args.chip)
 
     phaseScan = {
     volt: {

@@ -57,7 +57,7 @@ if __name__ == '__main__':
         } for volt in voltages
     }
 
-    plots = create_plot_path(args.path+ '/' + 'temperature_vs_tid_plots')
+    plots = create_plot_path(args.path+ '/' + 'temperature_vs_tid_plots-%s'%args.chip)
 
 
     titles = ['08', '11', '14', '20', '26', '29', '32']

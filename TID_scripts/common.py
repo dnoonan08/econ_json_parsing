@@ -95,7 +95,7 @@ def create_plot_path(path):
 # d = datetime.date(2022, 12, 25) example date
 
 xray_times = {'start' : [datetime(2024,7,18,20,55),datetime(2024,7,19,18,21)], 
-              'end' : [datetime(2024,7,19,15,49)], 
+              'end' : [datetime(2024,7,19,15,49),datetime(2024,7,21,23,27) ], 
 }
 
 # function to get if run is during x-ray or not
