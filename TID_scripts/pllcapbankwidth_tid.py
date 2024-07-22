@@ -53,7 +53,7 @@ if __name__ == '__main__':
         plt.title(f"{volt}V")
         plt.ylabel('PllCapbankWidth')
         plt.xlabel("TID (MRad)")
-        #plt.ylim(20,26)
+        plt.ylim(0,20)
         plt.savefig(f'{plots}/pll_capbank_width_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
         plt.clf()
 
@@ -64,7 +64,7 @@ if __name__ == '__main__':
         axs[i].set_ylabel('PllCapbankWidth')
         axs[i].set_xlabel('TID (MRad)')
         # axs[i].set_xlim(0,660)
-        #axs[i].set_ylim(20,26)
+        axs[i].set_ylim(0,20)
         axs[i].grid(which='minor', alpha=0.2, color='b', linestyle='--', linewidth=.3)
         axs[i].grid(which='major', alpha=0.2, color='b', linestyle='--', linewidth=.6)
     for ax in axs.flat:

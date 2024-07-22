@@ -57,7 +57,7 @@ if __name__ == '__main__':
         plt.title(f"Maximum Locking Frequency at {volt}V")
         plt.xlabel("TID (MRad)")
         plt.ylabel("Frequency (MHz)")
-        #plt.ylim(43,47)
+        plt.ylim(43,47)
         plt.savefig(f'{plots}/max_locking_freq_1p{titles[i]}V.png', dpi=300, facecolor="w")
         plt.clf()
     
@@ -66,7 +66,7 @@ if __name__ == '__main__':
         plt.title(f"Minimum Locking Frequency at {volt}V")
         plt.xlabel("TID (MRad)")
         plt.ylabel("Frequency (MHz)")
-        #plt.ylim(43,47)
+        plt.ylim(34,40)
         plt.savefig(f'{plots}/min_locking_freq_1p{titles[i]}V.png', dpi=300, facecolor="w")
         plt.clf()
 
@@ -78,13 +78,13 @@ if __name__ == '__main__':
                 axs[i,j].set_title(f"Maximum Locking Frequency at {volt}V")
                 axs[i,j].set_xlabel("TID (MRad)")
                 axs[i,j].set_ylabel("Frequency (MHz)")
-                #axs[i,j].set_ylim(43,47)
+                axs[i,j].set_ylim(43,47)
             if i == 1:
                 axs[i,j].plot(MinMaxLockingFreq[volt]['mradDose'], MinMaxLockingFreq[volt]['minFreq'])
                 axs[i,j].set_title(f"Minimum Locking Frequency at {volt}V")
                 axs[i,j].set_xlabel("TID (MRad)")
                 axs[i,j].set_ylabel("Frequency (MHz)")
-                #axs[i,j].set_ylim(34,38)
+                axs[i,j].set_ylim(34,40)
     for ax in axs.flat:
             ax.label_outer()
 
