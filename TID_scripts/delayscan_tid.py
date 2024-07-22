@@ -14,15 +14,13 @@ def getDelayScanData(data, voltage):
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
-                if f'test_TID.py::test_eTX_delayscan[{voltage}]' in data[i]['tests'][j]['nodeid']:
+                if f'test_eTX_delayscan[{voltage}]' in data[i]['tests'][j]['nodeid']:
                     errCounts.append(data[i]['tests'][j]['metadata']['eTX_errcounts'])
                     bitCounts.append(data[i]['tests'][j]['metadata']['eTX_bitcounts'])
     errCounts = np.array(errCounts)
     bitCounts = np.array(bitCounts)
-    if bitCounts > 0:
-        errRate = errCounts/bitCounts
-    else:
-        errRate = 0
+    errRate = errCounts/bitCounts
+
     mradDose = FNames2MRad(fnames)
     dosePlots = np.array(list(mradDose)+[(mradDose[-1]-mradDose[-2])+mradDose[-1]])
     return errRate, dosePlots, mradDose
@@ -43,6 +41,10 @@ if __name__ == '__main__':
     data, starttime = get_data(path)
     fnames = get_fnames(path)
 
+    ECOND = True
+    if 'ECONT' in fnames[0]:
+        ECOND = False
+
 
     # Plotting
 
@@ -58,7 +60,10 @@ if __name__ == '__main__':
 
     titles = ['08', '11', '14', '20', '26', '29', '32']
 
-    for j  in range(6):
+    nbins = 13
+    if ECOND: nbins = 6
+    
+    for j  in range(nbins):
         for i, (volt) in enumerate(voltages):
             fig, ax = plt.subplots()
             a, b = np.meshgrid(delayScan[volt]['mradDose'],np.arange(63))
@@ -73,7 +78,7 @@ if __name__ == '__main__':
             plt.clf()
             plt.close()
 
-    for j in range(6):
+    for j in range(nbins):
 
         fig,axs=plt.subplots(figsize=(55,12),ncols=7,nrows=1, layout="constrained")
         
