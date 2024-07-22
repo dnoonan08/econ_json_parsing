@@ -107,7 +107,20 @@ if __name__ == '__main__':
     # Plotting
 
     plots = create_plot_path(args.path+ '/' + 'sc_error_vs_tid_plots-%s'%args.chip)
-
+    titles = ['08', '11', '14', '20', '26', '29', '32']
+    for i, (volt) in enumerate(voltages):
+        plt.scatter(scErrors[volt]["mradDose0"], scErrors[volt]["errRate0"])
+        plt.scatter(scErrors[volt]["mradDose7"], scErrors[volt]["errRate7"])
+        plt.scatter(scErrors[volt]["mradDose67"], scErrors[volt]["errRate67"])
+        plt.title(f"{volt}V")
+        plt.ylabel('Error Rate')
+        plt.xlabel("TID (MRad)")
+        plt.ylim(10**-11,1)
+        plt.yscale('log')
+        plt.savefig(f'{plots}/err_rate_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
+        plt.clf()
+        
+>>>>>>> d299c66bdbb458f99d12e4b640d4e9f06d6a9b74
     fig,axs=plt.subplots(figsize=(70,12),ncols=7,nrows=1, layout="constrained")
     for i, (volt) in enumerate(voltages):
         axs[i].scatter(scErrors[volt]["mradDose0"], scErrors[volt]["errRate0"])
@@ -124,15 +137,4 @@ if __name__ == '__main__':
         ax.label_outer()
     fig.savefig(f'{plots}/summary_word_err_err_rate_results.png')
     
-    titles = ['08', '11', '14', '20', '26', '29', '32']
-    for i, (volt) in enumerate(voltages):
-        plt.scatter(scErrors[volt]["mradDose0"], scErrors[volt]["errRate0"])
-        plt.scatter(scErrors[volt]["mradDose7"], scErrors[volt]["errRate7"])
-        plt.scatter(scErrors[volt]["mradDose67"], scErrors[volt]["errRate67"])
-        plt.title(f"{volt}V")
-        plt.ylabel('Error Rate')
-        plt.xlabel("TID (MRad)")
-        plt.ylim(10**-11,1)
-        plt.yscale('log')
-        plt.savefig(f'{plots}/err_rate_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
-        plt.clf()
+
