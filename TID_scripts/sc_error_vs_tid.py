@@ -106,7 +106,7 @@ if __name__ == '__main__':
 }
     # Plotting
 
-    plots = create_plot_path(args.path+ '/' + 'sc_error_vs_tid_plots')
+    plots = create_plot_path(args.path+ '/' + 'sc_error_vs_tid_plots-%s'%args.chip)
 
     fig,axs=plt.subplots(figsize=(70,12),ncols=7,nrows=1, layout="constrained")
     for i, (volt) in enumerate(voltages):
