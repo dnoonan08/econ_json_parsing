@@ -78,7 +78,7 @@ if __name__ == '__main__':
         axs[i].set_ylabel('Current (A)')
         axs[i].set_xlabel('TID (MRad)')
         #set these limits later
-        # axs[i].set_ylim(0.15,0.31)
+        axs[i].set_ylim(0.15,0.40)
         # axs[i].set_xlim(0,660) 
     for ax in axs.flat:
         ax.label_outer()   
