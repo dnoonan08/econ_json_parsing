@@ -17,7 +17,7 @@ def getCurrentValues(data, voltage,starttime):
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
-                if f"test_TID.py::test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
+                if f"test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
                     currents.append(data[i]['tests'][j]['metadata']['Current'])
                     hasL1As.append(data[i]['tests'][j]['metadata']['HasL1A'])
                     Timestamps.append(data[i]['tests'][j]['metadata']['Timestamp'])
@@ -38,6 +38,7 @@ if __name__ == '__main__':
     fnames = list(np.sort(glob.glob(f"{path_to_json}/report*.json")))
     # Path to JSONs
     path = args.path + '/' + args.chip + '/'
+    fnames = list(np.sort(glob.glob(f"{path}/report*.json")))
     print(f"Running on {path}")
 
     # Fetch JSON data and startime of first JSON

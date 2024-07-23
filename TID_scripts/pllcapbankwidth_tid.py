@@ -13,7 +13,7 @@ def getpllCapbankWidth(data, voltage):
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
-                if f"test_TID.py::test_pll_capbank_width[{voltage}]" in data[i]['tests'][j]['nodeid']:
+                if f"test_pll_capbank_width[{voltage}]" in data[i]['tests'][j]['nodeid']:
                     PllCapbankWidth.append(data[i]['tests'][j]['metadata']['pll_capbank_width'])    
     
     mradDose = FNames2MRad(fnames)

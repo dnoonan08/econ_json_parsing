@@ -17,7 +17,7 @@ def getTemperatureValues(data, voltage,starttime):
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
-                if f"test_TID.py::test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
+                if f"test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
                     temperatures.append(data[i]['tests'][j]['metadata']['Temperature'])
                     hasL1As.append(data[i]['tests'][j]['metadata']['HasL1A'])
                     Timestamps.append(data[i]['tests'][j]['metadata']['Timestamp'])
@@ -71,7 +71,7 @@ if __name__ == '__main__':
         plt.title(f"{volt}V")
         plt.ylabel('Temperature (C)')
         plt.xlabel("TID (MRad)")
-        #plt.ylim(-5,25)
+        plt.ylim(-20,25)
         plt.legend()
         plt.savefig(f'{plots}/temperature_vs_tid_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
         plt.clf()
@@ -83,7 +83,7 @@ if __name__ == '__main__':
         axs[i].set_ylabel('Temperature (C)')
         axs[i].set_xlabel('TID (MRad)')
         # set these limits later
-        #axs[i].set_ylim(-5,25)
+        axs[i].set_ylim(-20,25)
         # axs[i].set_xlim(0,660)
     for ax in axs.flat:
         ax.label_outer()   
