@@ -14,7 +14,7 @@ def getPhaseScanData(data, voltage):
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
-                if f'test_TID.py::test_ePortRXPRBS[{voltage}]' in data[i]['tests'][j]['nodeid']:
+                if f'test_ePortRXPRBS[{voltage}]' in data[i]['tests'][j]['nodeid']:
                     errCounts.append(data[i]['tests'][j]['metadata']['eRX_errcounts'])
     errCounts = np.array(errCounts)
     mradDose = FNames2MRad(fnames)

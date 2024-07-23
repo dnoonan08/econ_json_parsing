@@ -14,7 +14,7 @@ def getMinMaxLockingFreq(data, voltage):
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
-                if f"test_TID.py::test_pllautolock[{voltage}]" in data[i]['tests'][j]['nodeid']:
+                if f"test_pllautolock[{voltage}]" in data[i]['tests'][j]['nodeid']:
                     minFreq.append(data[i]['tests'][j]['metadata']['min_freq'])
                     maxFreq.append(data[i]['tests'][j]['metadata']['max_freq'])
     minFreq = np.array(minFreq)
