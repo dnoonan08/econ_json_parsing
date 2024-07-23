@@ -35,6 +35,7 @@ if __name__ == '__main__':
     parser.add_argument('--path', type = str) # repo name on github json repo
     parser.add_argument('--chip', default = 'chip003') # repo name on github json repo
     args = parser.parse_args()
+    fnames = list(np.sort(glob.glob(f"{path_to_json}/report*.json")))
     # Path to JSONs
     path = args.path + '/' + args.chip + '/'
     fnames = list(np.sort(glob.glob(f"{path}/report*.json")))
