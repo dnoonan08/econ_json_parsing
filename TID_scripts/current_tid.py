@@ -1,6 +1,6 @@
 # Script to plot current versus TID 
 
-from common import get_data, Timestamp2MRad, FNames2MRad, voltages, MYROOT, create_plot_path
+from common import get_data, Timestamp2MRad, FNames2MRad, voltages, MYROOT, create_plot_path, get_fnames
 import numpy as np
 
 import matplotlib.colors as mcolors
@@ -17,7 +17,7 @@ def getCurrentValues(data, voltage,starttime):
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
-                if f"test_TID.py::test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
+                if f"test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
                     currents.append(data[i]['tests'][j]['metadata']['Current'])
                     hasL1As.append(data[i]['tests'][j]['metadata']['HasL1A'])
                     Timestamps.append(data[i]['tests'][j]['metadata']['Timestamp'])
@@ -42,6 +42,11 @@ if __name__ == '__main__':
 
     # Fetch JSON data and startime of first JSON
     data, starttime = get_data(path)
+    fnames = get_fnames(path)
+
+    ECOND = True
+    if 'ECONT' in fnames[0]:
+        ECOND = False
 
     currents = {
         volt: {
@@ -57,22 +62,30 @@ if __name__ == '__main__':
 
     titles = ['08', '11', '14', '20', '26', '29', '32']
     for i, (volt) in enumerate(voltages):
-        plt.scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==0], currents[volt]["current"][currents[volt]["hasL1A"]==0], label = 'No L1As')
-        plt.scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==7], currents[volt]["current"][currents[volt]["hasL1A"]==7], label = '7 L1As per Orbit')
-        plt.scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==67], currents[volt]["current"][currents[volt]["hasL1A"]==67], label = '67 L1As per Orbit')
+
+        if ECOND:
+            plt.scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==0], currents[volt]["current"][currents[volt]["hasL1A"]==0], label = 'No L1As')
+            plt.scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==7], currents[volt]["current"][currents[volt]["hasL1A"]==7], label = '7 L1As per Orbit')
+            plt.scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==67], currents[volt]["current"][currents[volt]["hasL1A"]==67], label = '67 L1As per Orbit')
+        else:
+            plt.scatter(currents[volt]["mradDose"], currents[volt]["current"])
         plt.title(f"{volt}V")
         plt.ylabel("Current (A)")
         plt.xlabel("TID (MRad)")
         plt.ylim(0.15,0.41)
-        plt.legend()
+        if ECOND:
+            plt.legend()
         plt.savefig(f'{plots}/current_vs_tid_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
         plt.clf()
 
     fig,axs=plt.subplots(figsize=(70,12),ncols=7,nrows=1, layout="constrained")
     for i, (volt) in enumerate(voltages):
-        axs[i].scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==0], currents[volt]["current"][currents[volt]["hasL1A"]==0])
-        axs[i].scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==7], currents[volt]["current"][currents[volt]["hasL1A"]==7])
-        axs[i].scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==67], currents[volt]["current"][currents[volt]["hasL1A"]==67])
+        if ECOND:
+            axs[i].scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==0], currents[volt]["current"][currents[volt]["hasL1A"]==0])
+            axs[i].scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==7], currents[volt]["current"][currents[volt]["hasL1A"]==7])
+            axs[i].scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==67], currents[volt]["current"][currents[volt]["hasL1A"]==67])
+        else:
+            axs[i].scatter(currents[volt]["mradDose"], currents[volt]["current"])
 
         axs[i].set_title(f"{volt}")
         axs[i].set_ylabel('Current (A)')
