@@ -1,6 +1,6 @@
 # Script to plot SC errror versus TID 
 
-from common import get_data, Timestamp2MRad, FNames2MRad, voltages, MYROOT, create_plot_path
+from common import get_data, Timestamp2MRad, FNames2MRad, voltages, MYROOT, create_plot_path,get_fnames
 import numpy as np
 
 import matplotlib.colors as mcolors
@@ -16,7 +16,7 @@ def getSCErrors(data, voltage, starttime):
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
-                if f"test_TID.py::test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
+                if f"test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
                     info = np.array(data[i]['tests'][j]['metadata']['word_err_count'])
                     scErrors.append(np.array([int(x) for x in info[:,2]]))
                     scWordCounts.append(np.array([int(x) for x in info[:,1]]))
@@ -93,6 +93,10 @@ if __name__ == '__main__':
 
     # Fetch JSON data and startime of first JSON
     data, starttime = get_data(path)
+    fnames = get_fnames(path)
+
+    ECOND = True
+    if 'ECONT' in fnames[0]: ECOND = False
 
     scErrors = {
     volt: {
