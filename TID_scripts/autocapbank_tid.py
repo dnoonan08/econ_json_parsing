@@ -13,7 +13,7 @@ def getAutoCapbank(data, voltage,fnames):
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
-                if f"test_TID.py::test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
+                if f"test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
                     AutomaticCapbanks.append(data[i]['tests'][j]['metadata']['automatic_capbank_setting'])    
     
     allowed_cap_bank_vals=np.array([  0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,

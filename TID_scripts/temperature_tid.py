@@ -17,7 +17,7 @@ def getTemperatureValues(data, voltage,starttime):
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
-                if f"test_TID.py::test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
+                if f"test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
                     temperatures.append(data[i]['tests'][j]['metadata']['Temperature'])
                     hasL1As.append(data[i]['tests'][j]['metadata']['HasL1A'])
                     Timestamps.append(data[i]['tests'][j]['metadata']['Timestamp'])
