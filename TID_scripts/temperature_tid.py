@@ -71,7 +71,7 @@ if __name__ == '__main__':
         plt.title(f"{volt}V")
         plt.ylabel('Temperature (C)')
         plt.xlabel("TID (MRad)")
-        #plt.ylim(-5,25)
+        plt.ylim(-20,25)
         plt.legend()
         plt.savefig(f'{plots}/temperature_vs_tid_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
         plt.clf()
@@ -83,7 +83,7 @@ if __name__ == '__main__':
         axs[i].set_ylabel('Temperature (C)')
         axs[i].set_xlabel('TID (MRad)')
         # set these limits later
-        #axs[i].set_ylim(-5,25)
+        axs[i].set_ylim(-20,25)
         # axs[i].set_xlim(0,660)
     for ax in axs.flat:
         ax.label_outer()   
