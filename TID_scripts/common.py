@@ -15,11 +15,18 @@ import matplotlib.pyplot as plt
 
 import os
 
-MYROOT = os.environ['MYROOT']
-
+try:
+    MYROOT = os.environ['MYROOT']
+except:
+    MYROOT = None
 mplhep.style.use(mplhep.style.CMS)
 
+ObelixDoseRate = 9.212055 #MRad/hr from Giulio
 voltages = [1.08, 1.11, 1.14, 1.20, 1.26, 1.29, 1.32]
+
+xray_start_stop = {"chip003":[(np.datetime64('2024-07-18T20:55'),np.datetime64('2024-07-19T15:49')),(np.datetime64('2024-07-19T18:21'),np.datetime64('2024-07-21T23:27'))],
+                   "chip002":[(np.datetime64('2024-07-22T19:43'),None),]
+                  }
 
 def jsonload(fname):
     with open(fname) as jsonfile:
@@ -45,6 +52,30 @@ def get_fnames(path_to_json):
     return list(np.sort(glob.glob(f"{path_to_json}/report*.json")))
 
 
+
+def datetime_to_TID(timestamp, doseRate, xray_start_stop = [(None,None)]):
+    """
+    Convert timestamps into TID doses
+    """
+
+    TID=[]
+    xray_on = []
+    for t in timestamp:
+        TID.append(0)
+        _xray_on = False
+        if t < xray_start_stop[0][0]:
+            TID[-1] = (t - xray_start_stop[0][0]).astype('timedelta64[s]').astype(int)/3600.*doseRate
+        else:
+            for x_start,x_stop in xray_start_stop:
+                if t>x_start:
+                    if (x_stop is None) or (t<x_stop):
+                        _xray_on = True
+                        TID[-1] += (t - x_start).astype('timedelta64[s]').astype(int)/3600.*doseRate
+                    else:
+                        _xray_on = False
+                        TID[-1] += (x_stop - x_start).astype('timedelta64[s]').astype(int)/3600.*doseRate
+        xray_on.append(_xray_on)
+    return TID, xray_on
 
 def Timestamp2MRad(input, startTime):
     #Example
