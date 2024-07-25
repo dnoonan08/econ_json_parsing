@@ -2,7 +2,7 @@
 
 from common import get_data, Timestamp2MRad, FNames2MRad, voltages, MYROOT, create_plot_path, get_fnames
 import numpy as np
-
+import glob
 import matplotlib.colors as mcolors
 import matplotlib.scale
 import matplotlib as mpl
@@ -13,7 +13,7 @@ def getAutoCapbank(data, voltage,fnames):
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
-                if f"test_TID.py::test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
+                if f"test_streamCompareLoop[{voltage}]" in data[i]['tests'][j]['nodeid']:
                     AutomaticCapbanks.append(data[i]['tests'][j]['metadata']['automatic_capbank_setting'])    
     
     allowed_cap_bank_vals=np.array([  0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # Path to JSONs
     path = args.path + '/' + args.chip + '/'
     print(f"Running on {path}")
-
+    fnames = list(np.sort(glob.glob(f"{path}/report*.json")))
     # Fetch JSON data and startime of first JSON
     data, starttime = get_data(path)
     fnames = get_fnames(path)
@@ -52,7 +52,7 @@ if __name__ == '__main__':
         } for volt in voltages
     }
 
-
+    
     # Plotting
 
     plots = create_plot_path(args.path+ '/' + 'autocapbank_vs_tid_plots-%s'%args.chip)
@@ -63,7 +63,10 @@ if __name__ == '__main__':
         plt.title(f"{volt}V")
         plt.ylabel('Automatic Capbank Selection')
         plt.xlabel("TID (MRad)")
-        plt.ylim(20,30)
+        if 'ECOND' in fnames[0]:
+            plt.ylim(20,30)
+        else:
+            plt.ylim(18,28)
         plt.savefig(f'{plots}/automatic_capbank_selection_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
         plt.clf()
 
@@ -74,7 +77,10 @@ if __name__ == '__main__':
         axs[i].set_ylabel('Automatic Capbank Selection')
         axs[i].set_xlabel('TID (MRad)')
         # axs[i].set_xlim(0,660)
-        axs[i].set_ylim(20,30)
+        if 'ECOND' in fnames[0]:
+            axs[i].set_ylim(20,30)
+        else:
+            axs[i].set_ylim(18,28)
         axs[i].grid(which='minor', alpha=0.2, color='b', linestyle='--', linewidth=.3)
         axs[i].grid(which='major', alpha=0.2, color='b', linestyle='--', linewidth=.6)
     for ax in axs.flat:
