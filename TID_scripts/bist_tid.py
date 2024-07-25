@@ -31,11 +31,6 @@ def getBistData(flist):
                 this_ob= np.array(bist_result['obResults'])
                 initbist = np.array(bist_result['initBistVal'])
                 goodinit.append((initbist==0).all(axis=1))
-                if len((initbist==0).all(axis=1)) != 30:
-                    print(len((initbist==0).all(axis=1)))
-                    print(f)
-
-
                 pp.append(np.array([((this_pp>>i)&1) & (this_pp>0) for i in range(12)]))
                 ob.append(np.array([((this_ob>>i)&1) & (this_ob>0) for i in range(12)]))
                 timestamps.append(np.datetime64(bist_result['timestamps'][0]))
