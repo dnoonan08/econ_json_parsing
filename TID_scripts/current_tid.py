@@ -1,6 +1,6 @@
 # Script to plot current versus TID 
 
-from common import get_data, Timestamp2MRad, FNames2MRad, voltages, MYROOT, create_plot_path, get_fnames
+from common import get_data, Timestamp2MRad, FNames2MRad, voltages, MYROOT, create_plot_path, get_fnames, Timestamp2XrayBool
 import numpy as np
 import glob
 import matplotlib.colors as mcolors
@@ -24,8 +24,10 @@ def getCurrentValues(data, voltage,starttime):
     current = np.array([x for xs in currents for x in xs])
     hasL1A = np.array([x for xs in hasL1As for x in xs])
     Timestamp = np.array([x for xs in Timestamps for x in xs])
+    time = np.array([np.datetime64(x) for x in Timestamp])
     mradDose = Timestamp2MRad(Timestamp,starttime)
-    return current, hasL1A, mradDose
+    hasXrays = Timestamp2XrayBool(Timestamp)
+    return current, hasL1A, mradDose, time, hasXrays
 
 
 if __name__ == '__main__':
@@ -49,11 +51,15 @@ if __name__ == '__main__':
     if 'ECONT' in fnames[0]:
         ECOND = False
 
+    results = {volt: getCurrentValues(data, volt,starttime) for volt in voltages}
+
     currents = {
         volt: {
-        "current": getCurrentValues(data, volt,starttime)[0],
-        "hasL1A": getCurrentValues(data, volt,starttime)[1],
-        "mradDose": getCurrentValues(data, volt,starttime)[2],
+        "current": results[volt][0],
+        "hasL1A": results[volt][1],
+        "mradDose": results[volt][2],
+        "timestamp": results[volt][3],
+        "hasXrays": results[volt][4]
         }    for volt in voltages
     }
 
@@ -67,7 +73,7 @@ if __name__ == '__main__':
     for i, (volt) in enumerate(voltages):
         if 'ECOND' in fnames[0]:
             for val in np.unique(currents[volt]['hasL1A']):
-                plt.scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==val], currents[volt]["current"][currents[volt]["hasL1A"]==val], label = f'{val} L1As')
+                plt.scatter(currents[volt]["mradDose"][(currents[volt]["hasL1A"]==val)&(currents[volt]["hasXrays"]==1)], currents[volt]["current"][(currents[volt]["hasL1A"]==val)&(currents[volt]["hasXrays"]==1)], label = f'{val} L1As')
             plt.legend()
         else:
             plt.scatter(currents[volt]['mradDose'], currents[volt]['current'])
@@ -79,6 +85,21 @@ if __name__ == '__main__':
         plt.clf()
 
 
+    for i, (volt) in enumerate(voltages):
+        if 'ECOND' in fnames[0]:
+            for val in np.unique(currents[volt]['hasL1A']):
+                plt.scatter(currents[volt]["timestamp"][currents[volt]["hasL1A"]==val], currents[volt]["current"][currents[volt]["hasL1A"]==val], label = f'{val} L1As')
+            plt.legend()
+        else:
+            plt.scatter(currents[volt]['timestamp'], currents[volt]['current'])
+        plt.title(f"{volt}V")
+        plt.ylabel("Current (A)")
+        #plt.xlabel("TID (MRad)")
+        plt.ylim(0.15,0.41)
+        plt.savefig(f'{plots}/current_measurement_results_volt_1p{titles[i]}V_time.png', dpi=300, facecolor="w")
+        plt.clf()
+
+
 
 
 
@@ -87,7 +108,7 @@ if __name__ == '__main__':
     for i, (volt) in enumerate(voltages):
         if 'ECOND' in fnames[0]:
             for val in np.unique(currents[volt]['hasL1A']):
-                axs[i].scatter(currents[volt]["mradDose"][currents[volt]["hasL1A"]==val], currents[volt]["current"][currents[volt]["hasL1A"]==val], label = f"{val} L1A's")
+                axs[i].scatter(currents[volt]["mradDose"][(currents[volt]["hasL1A"]==val)&(currents[volt]["hasXrays"]==1)], currents[volt]["current"][(currents[volt]["hasL1A"]==val)&(currents[volt]["hasXrays"]==1)], label = f"{val} L1A's")
         else:
             axs[i].scatter(currents[volt]['mradDose'], currents[volt]['current'])
         axs[i].set_title(f"{volt}")
@@ -100,6 +121,25 @@ if __name__ == '__main__':
     for ax in axs.flat:
         ax.label_outer()   
     fig.savefig(f'{plots}/summary_current_vs_tid_results.png', dpi=300, facecolor="w")
+
+
+    fig,axs=plt.subplots(figsize=(70,12),ncols=7,nrows=1, layout="constrained")
+    for i, (volt) in enumerate(voltages):
+        if 'ECOND' in fnames[0]:
+            for val in np.unique(currents[volt]['hasL1A']):
+                axs[i].scatter(currents[volt]["timestamp"][currents[volt]["hasL1A"]==val], currents[volt]["current"][currents[volt]["hasL1A"]==val], label = f"{val} L1A's")
+        else:
+            axs[i].scatter(currents[volt]['timestamp'], currents[volt]['current'])
+        axs[i].set_title(f"{volt}")
+        axs[i].set_ylabel('Current (A)')
+        #axs[i].set_xlabel('TID (MRad)')
+        #set these limits later
+        axs[i].set_ylim(0.15,0.41)
+        if 'ECOND' in fnames[0]:
+            axs[i].legend() 
+    for ax in axs.flat:
+        ax.label_outer()   
+    fig.savefig(f'{plots}/summary_current_vs_tid_results_time.png', dpi=300, facecolor="w")
         
     print("Done producing current vs TID plots!")
 
