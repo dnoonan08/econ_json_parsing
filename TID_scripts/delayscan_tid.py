@@ -8,28 +8,99 @@ import matplotlib.scale
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-def getDelayScanData(data, voltage):
+def getDelayScanData(data, voltage, chip):
     bitCounts = []
     errCounts = []
+    timestamps = []
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
                 if f'test_eTX_delayscan[{voltage}]' in data[i]['tests'][j]['nodeid']:
-                    errCounts.append(data[i]['tests'][j]['metadata']['eTX_errcounts'])
-                    bitCounts.append(data[i]['tests'][j]['metadata']['eTX_bitcounts'])
+                    if 'timestamp' in data[i]['tests'][j]['metadata']:
+                        errCounts.append(data[i]['tests'][j]['metadata']['eTX_errcounts'])
+                        bitCounts.append(data[i]['tests'][j]['metadata']['eTX_bitcounts'])
+                        timestamps.append(np.datetime64(data[i]['tests'][j]['metadata']['timestamp']))
     errCounts = np.array(errCounts)
     bitCounts = np.array(bitCounts)
     errRate = errCounts/bitCounts
+    timestamps = np.array(timestamps)
+    # mradDose = FNames2MRad(fnames)
+    # dosePlots = np.array(list(mradDose)+[(mradDose[-1]-mradDose[-2])+mradDose[-1]])
+    tid, xray_on = datetime_to_TID(timestamps, ObelixDoseRate, xray_start_stop[f'chip00{chip}'])
+    tid = np.array(tid)
+    xray_on = np.array(xray_on)
+    tidPlots = np.array(list(tid)+[(tid[-1]-tid[-2])+tid[-1]])
+    timestampPlots = np.array(list(timestamps)+[(timestamps[-1]-timestamps[-2])+timestamps[-1]])
+    xrayBoolPlots = list(xray_on) + [True]
 
-    #mradDose = FNames2MRad(fnames)
-    times = FNames2Time(fnames)
-    mradDose, hasXrays = datetime_to_TID(times, ObelixDoseRate, xray_start_stop[args.chip])
-    mradDose = np.array(mradDose)
-    hasXrays = np.array(hasXrays)
-    dosePlots = np.array(list(mradDose)+[(mradDose[-1]-mradDose[-2])+mradDose[-1]])
-    timesPlots = np.array(list(times)+[(times[-1]-times[-2])+times[-1]])
-    #hasXraysPlots = np.array(list(hasXrays)+[(hasXrays[-1]-hasXrays[-2])+hasXrays[-1]])
-    return errRate, dosePlots, mradDose, hasXrays, times, timesPlots
+    result = {
+        'errRate': errRate,
+        'tid' : tid,
+        'xray_on': xray_on,
+        'tidPlots': tidPlots,
+        'timestampPlots': timestampPlots,
+        'xrayBoolPlots': np.array(xrayBoolPlots),
+        'timestamps': timestamps,
+    }
+    return result
+
+def makeDelayScanPlot(delayScan,path, ECONT = False, timestamp = False):
+    titles = ['08', '11', '14', '20', '26', '29', '32']
+    voltages = [1.08, 1.11, 1.14, 1.20, 1.26, 1.29, 1.32]
+    if ECONT:
+        jrange = 13
+    else:
+        jrange = 6
+    for j  in range(jrange):
+        for i, (volt) in enumerate(voltages):
+            fig, ax = plt.subplots()
+            if timestamp:
+                a, b = np.meshgrid(delayScan[volt]['timestamps'],np.arange(63))
+                weights = delayScan[volt]['errRate'][:,j,:].T.flatten()
+                h = plt.hist2d(a.flatten(), b.flatten(), weights=weights, bins = (delayScan[volt]['timestampPlots'], np.arange(64)), cmap='RdYlBu_r', alpha=weights>0)
+                plt.xticks(rotation = 45)
+            else:
+                a, b = np.meshgrid(delayScan[volt]['tid'][delayScan[volt]['xray_on']==1],np.arange(63))
+                weights = delayScan[volt]['errRate'][:,j,:][delayScan[volt]['xray_on']==1].T.flatten()
+                h = plt.hist2d(a.flatten(), b.flatten(), weights=weights, bins = (delayScan[volt]['tidPlots'][delayScan[volt]['xrayBoolPlots']==1], np.arange(64)), cmap='RdYlBu_r', alpha=weights>0)
+                plt.xlabel('TID (MRad)')
+                
+            cb=fig.colorbar(h[3], ax = ax)
+            cb.set_label(label='Transmission errors rate')
+            plt.title(f"eTx {j} at {volt}V")
+            plt.ylabel('Delay select setting')
+            if timestamp:
+                plt.savefig(f'{path}/delay_scan_volt_TIMESTAMP_1p{titles[i]}V_eRx{j}.png', dpi=300, facecolor="w")
+            else:
+                plt.savefig(f'{path}/delay_scan_volt_TID_1p{titles[i]}V_eRx{j}.png', dpi=300, facecolor="w")
+            plt.clf()
+            plt.close()
+    for j in range(jrange):
+
+        fig,axs=plt.subplots(figsize=(55,12),ncols=7,nrows=1, layout="constrained")
+        
+        for i, (volt) in enumerate(voltages):
+            if timestamp:
+                a, b = np.meshgrid(delayScan[volt]['timestamps'],np.arange(63))
+                weights = delayScan[volt]['errRate'][:,j,:].T.flatten()
+                h = axs[i].hist2d(a.flatten(), b.flatten(), weights=weights, bins = (delayScan[volt]['timestampPlots'], np.arange(64)), cmap='RdYlBu_r', alpha=weights>0)
+                axs[i].set_xticklabels(axs[i].get_xticklabels(), rotation = 45)
+            else:
+                a, b = np.meshgrid(delayScan[volt]['tid'][delayScan[volt]['xray_on']==1],np.arange(63))
+                weights = delayScan[volt]['errRate'][:,j,:][delayScan[volt]['xray_on']==1].T.flatten()
+                h = axs[i].hist2d(a.flatten(), b.flatten(), weights=weights, bins = (delayScan[volt]['tidPlots'][delayScan[volt]['xrayBoolPlots']==1], np.arange(64)), cmap='RdYlBu_r', alpha=weights>0)
+                axs[i].set_xlabel('TID (MRad)')
+            cb=fig.colorbar(h[3], ax = axs[i])
+            cb.set_label(label='Transmission errors rate')
+            axs[i].set_title(f"eTx {j} at {volt}V")
+            axs[i].set_ylabel('Delay select setting')
+            
+        for ax in axs.flat:
+            ax.label_outer()
+        if timestamp:
+            fig.savefig(f'{path}/delay_scan_TIMESTAMP_eTx_{j}.png', dpi=300, facecolor="w")
+        else:
+            fig.savefig(f'{path}/delay_scan_TID_eTx_{j}.png', dpi=300, facecolor="w")
 
 if __name__ == '__main__':
     # argument parser
@@ -56,89 +127,15 @@ if __name__ == '__main__':
 
     plots = create_plot_path(args.path+ '/' + 'delayscan_vs_tid_plots-%s'%args.chip)
 
-    results = {volt: getDelayScanData(data, volt) for volt in voltages}
-    delayScan = {
-        volt: {
-            'errRate': results[volt][0],
-            'plotDose': results[volt][1],
-            'mradDose': results[volt][2],
-            'hasXrays': results[volt][3],
-            'times': results[volt][4],
-            'timesPlots': results[volt][5],
-            #'hasXraysPlots': results[5],
-        } for volt in voltages
+    delayScanResults = {
+    volt: getDelayScanData(data, volt, args.chip) for volt in voltages
     }
-
-    titles = ['08', '11', '14', '20', '26', '29', '32']
-
-    nbins = 13
-    if ECOND: nbins = 6
-    
-    for j  in range(nbins):
-        for i, (volt) in enumerate(voltages):
-            fig, ax = plt.subplots()
-            a, b = np.meshgrid(delayScan[volt]['mradDose'],np.arange(63))
-            weights = delayScan[volt]['errRate'][:,j,:].T.flatten()
-            h = plt.hist2d(a.flatten(), b.flatten(), weights=weights, bins = (delayScan[volt]['plotDose'], np.arange(64)), cmap='RdYlBu_r', alpha=weights>0)
-            cb=fig.colorbar(h[3])
-            cb.set_label(label='Transmission errors rate')
-            plt.title(f"eTx {j} at {volt}V")
-            plt.ylabel('Delay select setting')
-            plt.xlabel('TID (MRad)')
-            plt.savefig(f'{plots}/delay_scan_volt_1p{titles[i]}V_eRx{j}.png', dpi=300, facecolor="w")
-            plt.clf()
-            plt.close()
-
-        for i, (volt) in enumerate(voltages):
-            fig, ax = plt.subplots()
-            a, b = np.meshgrid(delayScan[volt]['times'],np.arange(63))
-            weights = delayScan[volt]['errRate'][:,j,:].T.flatten()
-            h = plt.hist2d(a.flatten(), b.flatten(), weights=weights, bins = (delayScan[volt]['timesPlots'], np.arange(64)), cmap='RdYlBu_r', alpha=weights>0)
-            cb=fig.colorbar(h[3])
-            cb.set_label(label='Transmission errors rate')
-            plt.title(f"eTx {j} at {volt}V")
-            ax.set_xticklabels(ax.get_xticklabels(), rotation = 60)
-
-            plt.ylabel('Delay select setting')
-            plt.xlabel('TID (MRad)')
-            plt.savefig(f'{plots}/delay_scan_volt_1p{titles[i]}V_eRx{j}_time.png', dpi=300, facecolor="w")
-            plt.clf()
-            plt.close()
-
-
-    for j in range(nbins):
-
-        fig,axs=plt.subplots(figsize=(55,12),ncols=7,nrows=1, layout="constrained")
-        
-        for i, (volt) in enumerate(voltages):
-            a, b = np.meshgrid(delayScan[volt]['mradDose'],np.arange(63))
-            weights = delayScan[volt]['errRate'][:,j,:].T.flatten()
-            norm = mcolors.TwoSlopeNorm(vmin=0, vmax = 255, vcenter=.9)
-            h = axs[i].hist2d(a.flatten(), b.flatten(), weights=weights, bins = (delayScan[volt]['plotDose'], np.arange(64)), cmap='RdYlBu_r', alpha=weights>0)
-            cb=fig.colorbar(h[3], ax = axs[i])
-            cb.set_label(label='Transmission errors rate')
-            axs[i].set_title(f"eTx {j} at {volt}V")
-            axs[i].set_ylabel('Delay select setting')
-            axs[i].set_xlabel('TID (MRad)')
-        for ax in axs.flat:
-            ax.label_outer()
-
-        fig,axs=plt.subplots(figsize=(55,12),ncols=7,nrows=1, layout="constrained")
-        
-        for i, (volt) in enumerate(voltages):
-            a, b = np.meshgrid(delayScan[volt]['times'],np.arange(63))
-            weights = delayScan[volt]['errRate'][:,j,:].T.flatten()
-            norm = mcolors.TwoSlopeNorm(vmin=0, vmax = 255, vcenter=.9)
-            h = axs[i].hist2d(a.flatten(), b.flatten(), weights=weights, bins = (delayScan[volt]['timesPlots'], np.arange(64)), cmap='RdYlBu_r', alpha=weights>0)
-            cb=fig.colorbar(h[3], ax = axs[i])
-            cb.set_label(label='Transmission errors rate')
-            axs[i].set_xticklabels(ax.get_xticklabels(), rotation = 60)
-            axs[i].set_title(f"eTx {j} at {volt}V")
-            axs[i].set_ylabel('Delay select setting')
-            #axs[i].set_xlabel('TID (MRad)')
-        for ax in axs.flat:
-            ax.label_outer()
-
-        fig.savefig(f'{plots}/delay_scan_eTx_{j}.png', dpi=300, facecolor="w") 
+    print('finished loading data')
+    if ECOND == True:
+        makeDelayScanPlot(delayScanResults, plots, ECONT = False, timestamp = False)
+        makeDelayScanPlot(delayScanResults, plots, ECONT = False, timestamp = True)
+    else:
+        makeDelayScanPlot(delayScanResults, plots, ECONT = True, timestamp = False)
+        makeDelayScanPlot(delayScanResults, plots, ECONT = True, timestamp = True)
             
         
