@@ -34,7 +34,7 @@ def getLockingFreqs(data, voltage, starttime):
         'timestamp' : times,
         'timePlots': np.array(list(times)+[(times[-1]-times[-2])+times[-1]]),
         'hasXrays' : hasXrays,
-        'hasXraysPlots' : np.array(list(hasXrays)+ [False]),
+        'hasXraysPlots' : np.array(list(hasXrays)+ [True]),
     }
     return results
 
@@ -68,12 +68,8 @@ if __name__ == '__main__':
         b,a =np.meshgrid(np.arange(35, 50+(1/8), (1/8)),np.array(autoLocks[volt]['mradDose'][autoLocks[volt]['hasXrays']==1]))
 
         d = autoLocks[volt]['auto_locks'][autoLocks[volt]['hasXrays']].flatten()
-
-        print(autoLocks[volt]['mradDose'].shape)
-        print(d.shape)
-        print(autoLocks[volt]['dosePlots'][autoLocks[volt]['hasXraysPlots']].shape)
         binary_cmap = ListedColormap(['white', '#08306b'])
-        plt.hist2d(a.flatten(),b.flatten(),weights=d,bins=(np.array(autoLocks[volt]['dosePlots']),np.arange(35, 51+(1/8), (1/8))),cmap=binary_cmap)
+        plt.hist2d(a.flatten(),b.flatten(),weights=d,bins=(np.array(autoLocks[volt]['dosePlots'][autoLocks[volt]['hasXraysPlots']]),np.arange(35, 51+(1/8), (1/8))),cmap=binary_cmap)
         plt.title(f"{volt}V")
         plt.ylabel("Frequency (MHz)")
         plt.xlabel("TID (MRad)")
@@ -85,13 +81,16 @@ if __name__ == '__main__':
         plt.clf()
 
     for i, (volt) in enumerate(voltages):
+        fig, ax = plt.subplots()
         b,a =np.meshgrid(np.arange(35, 50+(1/8), (1/8)),np.array(autoLocks[volt]['timestamp']))
         d = autoLocks[volt]['auto_locks'].flatten()
         binary_cmap = ListedColormap(['white', '#08306b'])
         plt.hist2d(a.flatten(),b.flatten(),weights=d,bins=(np.array(autoLocks[volt]['timePlots']),np.arange(35, 51+(1/8), (1/8))),cmap=binary_cmap)
+        ax.set_xticklabels(ax.get_xticklabels(), rotation = 60)
         plt.title(f"{volt}V")
         plt.ylabel("Frequency (MHz)")
         #plt.xlabel("TID (MRad)")
+        plt.xticks(rotation=45)
         handles, labels = plt.gca().get_legend_handles_labels()
         patch = mpatches.Patch(color='#08306b', label='PLL Locked')
         handles.append(patch)
@@ -106,7 +105,7 @@ if __name__ == '__main__':
         b,a =np.meshgrid(np.arange(35, 50+(1/8), (1/8)),np.array(autoLocks[volt]['mradDose'][autoLocks[volt]['hasXrays']==1]))
         d = autoLocks[volt]['auto_locks'][autoLocks[volt]['hasXrays']==1].flatten()
         binary_cmap = ListedColormap(['white', '#08306b'])
-        axs[i].hist2d(a.flatten(),b.flatten(),weights=d,bins=(np.array(autoLocks[volt]['dosePlots']),np.arange(35, 51+(1/8), (1/8))),cmap=binary_cmap)
+        axs[i].hist2d(a.flatten(),b.flatten(),weights=d,bins=(np.array(autoLocks[volt]['dosePlots'][autoLocks[volt]['hasXraysPlots']==1]),np.arange(35, 51+(1/8), (1/8))),cmap=binary_cmap)
         axs[i].set_ylabel("Frequency (MHz)")
         axs[i].set_xlabel("TID (MRad)")
         axs[i].set_title(f"{volt}V")
@@ -128,7 +127,10 @@ if __name__ == '__main__':
         axs[i].hist2d(a.flatten(),b.flatten(),weights=d,bins=(np.array(autoLocks[volt]['timePlots']),np.arange(35, 51+(1/8), (1/8))),cmap=binary_cmap)
         axs[i].set_ylabel("Frequency (MHz)")
         #axs[i].set_xlabel("TID (MRad)")
+        axs[i].set_xticklabels(axs[i].get_xticklabels(), rotation = 60)
+
         axs[i].set_title(f"{volt}V")
+        #axs[i].xticks(rotation=45)
         handles, labels = plt.gca().get_legend_handles_labels()
         patch = mpatches.Patch(color='#08306b', label='PLL Locked')
         handles.append(patch)
