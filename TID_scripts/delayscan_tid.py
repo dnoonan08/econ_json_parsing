@@ -26,7 +26,7 @@ def getDelayScanData(data, voltage, chip):
     timestamps = np.array(timestamps)
     # mradDose = FNames2MRad(fnames)
     # dosePlots = np.array(list(mradDose)+[(mradDose[-1]-mradDose[-2])+mradDose[-1]])
-    tid, xray_on = datetime_to_TID(timestamps, ObelixDoseRate, xray_start_stop[f'chip00{chip}'])
+    tid, xray_on = datetime_to_TID(timestamps, ObelixDoseRate, xray_start_stop[f'{chip}'])
     tid = np.array(tid)
     xray_on = np.array(xray_on)
     tidPlots = np.array(list(tid)+[(tid[-1]-tid[-2])+tid[-1]])

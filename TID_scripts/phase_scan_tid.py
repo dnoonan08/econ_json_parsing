@@ -21,7 +21,7 @@ def getPhaseScanData(data, voltage, chip):
                         timestamps.append(np.datetime64(data[i]['tests'][j]['metadata']['timestamp']))
     errCounts = np.array(errCounts)
     timestamps = np.array(timestamps)
-    tid, xray_on = datetime_to_TID(timestamps, ObelixDoseRate, xray_start_stop[f'chip00{chip}'])
+    tid, xray_on = datetime_to_TID(timestamps, ObelixDoseRate, xray_start_stop[f'{chip}'])
     tid = np.array(tid)
     xray_on = np.array(xray_on)
     tidPlots = np.array(list(tid)+[(tid[-1]-tid[-2])+tid[-1]])
