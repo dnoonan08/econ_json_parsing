@@ -25,7 +25,13 @@ ObelixDoseRate = 9.212055 #MRad/hr from Giulio
 voltages = [1.08, 1.11, 1.14, 1.20, 1.26, 1.29, 1.32]
 
 xray_start_stop = {"chip003":[(np.datetime64('2024-07-18T20:55'),np.datetime64('2024-07-19T15:49')),(np.datetime64('2024-07-19T18:21'),np.datetime64('2024-07-21T23:27'))],
-                   "chip002":[(np.datetime64('2024-07-22T19:43'),None),]
+                   "chip002":[(np.datetime64('2024-07-22T19:43'),np.datetime64('2024-07-25T10:08')),],
+                   "chip004":[(np.datetime64('2024-07-25T18:55'),None)],
+
+                   "chip003-subset":[(np.datetime64('2024-07-18T20:55'),np.datetime64('2024-07-19T15:49')),(np.datetime64('2024-07-19T18:21'),np.datetime64('2024-07-21T23:27'))],
+                   "chip002-subset":[(np.datetime64('2024-07-22T19:43'),None),],
+                   "chip004-subset":[(np.datetime64('2024-07-25T18:55'),None)]
+                  
                   }
 
 def jsonload(fname):
@@ -85,7 +91,7 @@ def Timestamp2MRad(input, startTime):
     delTimes = np.array(delTimes)
     delTimes = delTimes/timedelta(minutes=1)
     rad_dose = 9.2/60
-    megarad_dose = rad_dose*delTimes - 60 # offset
+    megarad_dose = rad_dose*delTimes # offset
     return megarad_dose
 
 def Timestamp2XrayBool(input):
@@ -113,8 +119,24 @@ def FNames2MRad(fnames):
     delTimes = np.array(delTimes)
     delTimes = delTimes/timedelta(minutes=1)
     rad_dose = 9.2/60
-    megarad_dose = rad_dose*delTimes - 60
+    megarad_dose = rad_dose*delTimes
     return megarad_dose
+
+def FNames2Time(fnames):
+    goodTimes = []
+
+    for fname in fnames:
+        time1 = fname.split("_")[-2]
+        time2 = fname.split("_")[-1].split(".json")[0]
+        time2 = time2.replace('-',":")
+        timegood = time1+" "+time2
+        goodTimes.append(timegood)
+        
+    #goodTimes = [datetime.strptime(x, "%Y-%m-%d %H-%M-%S") for x in goodTimes]
+    goodTimes = [np.datetime64(x) for x in goodTimes]
+    return goodTimes
+
+
 
 
 def create_plot_path(path):
@@ -125,7 +147,7 @@ def create_plot_path(path):
 
 # d = datetime.date(2022, 12, 25) example date
 
-xray_times = {'start' : [datetime(2024,7,18,20,55),datetime(2024,7,19,18,21)], 
+xray_times = {'start' : [datetime(2024,7,18,20,55),datetime(2024,7,19,18,21),datetime(2024,7,25,18,55)], 
               'end' : [datetime(2024,7,19,15,49),datetime(2024,7,21,23,27) ], 
 }
 
