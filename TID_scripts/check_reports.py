@@ -20,10 +20,13 @@ def checkReports(data, voltage):
             if 'metadata' in data[i]['tests'][j]:
                 if f"test_TID.py::test_pll_capbank_width[{voltage}]" in data[i]['tests'][j]['nodeid']:
                     counter+=1
+            if 'crash' in data[i]['tests'][j]['setup']:
+                if 'OSError: [Errno 5] Input/output error' in data[i]['tests'][j]['setup']['crash']['message']:
+                    fails.append(fnames[i])
         if counter != 1:
             fails.append(fnames[i])
                     
-    
+    fails = np.unique(np.array(fails))
     return list(set(fails))
 
 if __name__ == '__main__':
