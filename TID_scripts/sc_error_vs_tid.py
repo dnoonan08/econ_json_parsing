@@ -1,6 +1,6 @@
 # Script to plot SC errror versus TID 
 
-from common import get_data, Timestamp2MRad, FNames2MRad, voltages, MYROOT, create_plot_path,get_fnames
+from common import get_data, Timestamp2MRad, FNames2MRad, voltages, MYROOT, create_plot_path,get_fnames,Timestamp2XrayBool
 import numpy as np
 import glob
 
@@ -34,11 +34,14 @@ def getSCErrorsECOND(data, voltage, starttime):
     dim1, dim2 = np.array(Timestamps).shape
     Timestamps = np.array(Timestamps).flatten()
     mradDose = Timestamp2MRad(Timestamps, starttime)
+    hasXrays = Timestamp2XrayBool(Timestamps)
     mradDose = mradDose.reshape(dim1, dim2)
+    hasXrays = hasXrays.reshape(dim1,dim2)
     results = {
         f"{val}-L1As":{
             f"ErrRate": np.array(error_rates)[:,i],
             f"mradDose": mradDose[:,i],
+            f"hasXrays": hasXrays[:,i],
         } for i, (val) in enumerate(np.unique(hasL1As))
     }
     return results
@@ -60,9 +63,11 @@ def getSCErrorsECONT(data,voltage, starttime):
     Timestamps = np.array(Timestamps)
     errRate = np.array(errRate)
     mradDose = Timestamp2MRad(Timestamps, starttime)
+    hasXrays = Timestamp2XrayBool(Timestamps)
     result = {
         'ErrRate': errRate,
         "mradDose": mradDose,
+        "hasXrays": hasXrays,
     }
     return result
 
@@ -98,9 +103,9 @@ if __name__ == '__main__':
         titles = ['08', '11', '14', '20', '26', '29', '32']
         for i, (volt) in enumerate(voltages):
             for key in scErrors[volt].keys():
-                plt.scatter(scErrors[volt][key]['mradDose'], scErrors[volt][key]['ErrRate'], label=f'{key}')
+                plt.scatter(scErrors[volt][key]['mradDose'][scErrors[volt][key]['hasXrays']==1], scErrors[volt][key]['ErrRate'][scErrors[volt][key]['hasXrays']==1], label=f'{key}')
             plt.yscale("log")
-            plt.ylim(10**-11, 1.0)
+            #plt.ylim(10**-11, 1.0)
             plt.legend()
             plt.ylabel("Error Rate")
             plt.xlabel("TID (MRad)")
@@ -112,9 +117,9 @@ if __name__ == '__main__':
         fig,axs=plt.subplots(figsize=(70,12),ncols=7,nrows=1, layout="constrained")
         for i, (volt) in enumerate(voltages):
             for key in scErrors[volt].keys():
-                axs[i].scatter(scErrors[volt][key]['mradDose'], scErrors[volt][key]['ErrRate'], label=f'{key}')
+                axs[i].scatter(scErrors[volt][key]['mradDose'][scErrors[volt][key]['hasXrays']==1], scErrors[volt][key]['ErrRate'][scErrors[volt][key]['hasXrays']==1], label=f'{key}')
             axs[i].set_yscale("log")
-            axs[i].set_ylim(10**-11, 1.0)
+            #axs[i].set_ylim(10**-11, 1.0)
             axs[i].legend()
             axs[i].set_ylabel("Error Rate")
             axs[i].set_xlabel("TID (MRad)")
@@ -127,10 +132,10 @@ if __name__ == '__main__':
     else:
         titles = ['08', '11', '14', '20', '26', '29', '32']
         for i, (volt) in enumerate(voltages):
-            plt.scatter(scErrors[volt]['mradDose'], scErrors[volt]['ErrRate'])
+            plt.scatter(scErrors[volt]['mradDose'][scErrors[volt]['hasXrays']==1], scErrors[volt]['ErrRate'][scErrors[volt]['hasXrays']==1])
             ## note: MARKO WE WILL NEED TO UNCOMMENT THE YSCALE ONCE WE START TO GET ERRORS
             #plt.yscale("log")
-            plt.ylim(10**-11, 1.0)
+            #plt.ylim(10**-11, 1.0)
             plt.ylabel("Error Rate")
             plt.xlabel("TID (MRad)")
             plt.title(f"{volt}V")
@@ -138,9 +143,9 @@ if __name__ == '__main__':
             plt.clf()
         fig,axs=plt.subplots(figsize=(70,12),ncols=7,nrows=1, layout="constrained")
         for i, (volt) in enumerate(voltages):
-            axs[i].scatter(scErrors[volt]['mradDose'], scErrors[volt]['ErrRate'])
+            axs[i].scatter(scErrors[volt]['mradDose'][scErrors[volt]['hasXrays']==1], scErrors[volt]['ErrRate'][scErrors[volt]['hasXrays']==1])
             #axs[i].set_yscale("log")
-            axs[i].set_ylim(10**-11, 1.0)
+            #axs[i].set_ylim(10**-11, 1.0)
             axs[i].set_ylabel("Error Rate")
             axs[i].set_xlabel("TID (MRad)")
             axs[i].set_title(f"{volt}V")
