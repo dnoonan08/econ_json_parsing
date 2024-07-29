@@ -1,4 +1,4 @@
-# Script to plot SC errror versus TID 
+# Script to plot SC errror versus TID
 
 from common import get_data, Timestamp2MRad, FNames2MRad, voltages, MYROOT, create_plot_path, get_fnames, datetime_to_TID, xray_start_stop, ObelixDoseRate
 import numpy as np
@@ -90,7 +90,7 @@ def makeECONDSCPlots(scErrors,plots,timestamps = False):
         if timestamps:
             plt.savefig(f'{plots}/err_rate_results_TIMESTAMPS_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
         else:
-            plt.savefig(f'{plots}/err_rate_results_TIMESTAMPS_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
+            plt.savefig(f'{plots}/err_rate_results_TID_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
         plt.clf()
         plt.close()
 
@@ -114,7 +114,7 @@ def makeECONDSCPlots(scErrors,plots,timestamps = False):
     if timestamps:
         fig.savefig(f'{plots}/summary_word_err_err_rate_results_TIMESTAMPS.png', dpi=300, facecolor="w")
     else:
-        fig.savefig(f'{plots}/summary_word_err_err_rate_results_TIMESTAMPS.png', dpi=300, facecolor="w")
+        fig.savefig(f'{plots}/summary_word_err_err_rate_results_TID.png', dpi=300, facecolor="w")
 
 
 def getSCErrorsECONT(data,voltage, chip):
@@ -154,8 +154,8 @@ def makeECONTSCPlots(scErrors, plots, timestamps = False):
         else:
             plt.scatter(scErrors[volt]['tid'][scErrors[volt]['xray_on']==True], scErrors[volt]['ErrRate'][scErrors[volt]['xray_on']==True])
             plt.xlabel("TID (MRad)")
-        ## note: MARKO WE WILL NEED TO UNCOMMENT THE YSCALE ONCE WE START TO GET ERRORS                                                                                       
-        #plt.yscale("log")                                                                                                                                                    
+        ## note: MARKO WE WILL NEED TO UNCOMMENT THE YSCALE ONCE WE START TO GET ERRORS
+        #plt.yscale("log")
         plt.ylim(10**-11, 1.0)
         plt.ylabel("Error Rate")
         plt.title(f"{volt}V")
@@ -173,7 +173,7 @@ def makeECONTSCPlots(scErrors, plots, timestamps = False):
         else:
             axs[i].scatter(scErrors[volt]['tid'][scErrors[volt]['xray_on']==True], scErrors[volt]['ErrRate'][scErrors[volt]['xray_on']==True])
             axs[i].set_xlabel("TID (MRad)")
-        #axs[i].set_yscale("log")                                                                                                                                             
+        #axs[i].set_yscale("log")
         axs[i].set_ylim(10**-11, 1.0)
         axs[i].set_ylabel("Error Rate")
         axs[i].set_title(f"{volt}V")
@@ -219,8 +219,3 @@ if __name__ == '__main__':
     else:
         makeECONTSCPlots(scErrors, plots, timestamps = True)
         makeECONTSCPlots(scErrors, plots)
-
-
-        
-    
-
