@@ -90,7 +90,7 @@ def makeECONDSCPlots(scErrors,plots,timestamps = False):
         if timestamps:
             plt.savefig(f'{plots}/err_rate_results_TIMESTAMPS_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
         else:
-            plt.savefig(f'{plots}/err_rate_results_TIMESTAMPS_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
+            plt.savefig(f'{plots}/err_rate_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
         plt.clf()
         plt.close()
 
@@ -114,7 +114,7 @@ def makeECONDSCPlots(scErrors,plots,timestamps = False):
     if timestamps:
         fig.savefig(f'{plots}/summary_word_err_err_rate_results_TIMESTAMPS.png', dpi=300, facecolor="w")
     else:
-        fig.savefig(f'{plots}/summary_word_err_err_rate_results_TIMESTAMPS.png', dpi=300, facecolor="w")
+        fig.savefig(f'{plots}/summary_word_err_err_rate_results.png', dpi=300, facecolor="w")
 
 
 def getSCErrorsECONT(data,voltage, chip):
