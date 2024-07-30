@@ -24,8 +24,13 @@ def getSCErrorsECOND(data, voltage, chip):
                     times = []
                     for val in np.unique(hasL1As):
                         counts = info[:, 1:].astype(int)[np.array(hasL1As)==val]
+                        print(voltage)
+                        print(val)
+                        print(counts)
                         rollovers = (counts[1:] < counts[:-1]).sum(axis=0)
+                        print(rollovers)
                         totalWords, totalErrors = rollovers * 2**32 + counts[-1]
+                        print(totalWords,totalErrors)
                         errorRate = totalErrors/totalWords
                         errs.append(errorRate)
                         times.append(np.datetime64(info[:,0][hasL1As==val][-1]))
@@ -74,6 +79,7 @@ def getSCErrorsECOND(data, voltage, chip):
 
 def makeECONDSCPlots(scErrors,plots,timestamps = False):
     titles = ['08', '11', '14', '20', '26', '29', '32']
+
     for i, (volt) in enumerate(voltages):
         for key in scErrors[volt].keys():
             if timestamps:
@@ -93,7 +99,6 @@ def makeECONDSCPlots(scErrors,plots,timestamps = False):
             plt.savefig(f'{plots}/err_rate_results_volt_1p{titles[i]}V.png', dpi=300, facecolor="w")
         plt.clf()
         plt.close()
-
 
     fig,axs=plt.subplots(figsize=(70,12),ncols=7,nrows=1, layout="constrained")
     for i, (volt) in enumerate(voltages):
@@ -173,7 +178,9 @@ def makeECONTSCPlots(scErrors, plots, timestamps = False):
         else:
             axs[i].scatter(scErrors[volt]['tid'][scErrors[volt]['xray_on']==True], scErrors[volt]['ErrRate'][scErrors[volt]['xray_on']==True])
             axs[i].set_xlabel("TID (MRad)")
-        #axs[i].set_yscale("log")                                                                                                                                             
+        #axs[i].set_yscale("log")
+        
+
         axs[i].set_ylim(10**-11, 1.0)
         axs[i].set_ylabel("Error Rate")
         axs[i].set_title(f"{volt}V")
@@ -183,6 +190,8 @@ def makeECONTSCPlots(scErrors, plots, timestamps = False):
         fig.savefig(f'{plots}/summary_word_err_err_rate_results_TIMESTAMPS.png', dpi=300, facecolor="w")
     else:
         fig.savefig(f'{plots}/summary_word_err_err_rate_results_TID.png', dpi=300, facecolor="w")
+    plt.clf()
+    plt.close()
 
 
 
@@ -192,6 +201,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Args')
     parser.add_argument('--path', type = str) # repo name on github json repo
     parser.add_argument('--chip', default = 'chip003') # repo name on github json repo
+
     args = parser.parse_args()
 
     # Path to JSONs
@@ -211,7 +221,6 @@ if __name__ == '__main__':
     # Plotting
 
     plots = create_plot_path(args.path+ '/' + 'sc_error_vs_tid_plots-%s'%args.chip)
-
 
     if 'ECOND' in fnames[0]:
         makeECONDSCPlots(scErrors, plots, timestamps = True)
