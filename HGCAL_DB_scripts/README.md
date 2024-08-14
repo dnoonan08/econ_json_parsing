@@ -29,3 +29,10 @@ YY is a grade or other information.  For all of these chips I propose we label t
 ZZZZZZZ is the tray location of the chip after sorting.  We didn’t directly track this for these 150 chips, but they went into new trays that didn’t have numbers, so we’ll just assign them numbers.  I’d propose tray number 18000 and 18001  (or 08000 and 08001 for T) for these trays, with 8XXX trays being new empty trays we sorted chips into (like we did here), and we’ll have 9XXX trays be the new tray numbers we’ll sort bad chips into
 ```
 
+# Create XML file 
+
+```
+git clone ssh://git@gitlab.cern.ch:7999/hgcal-database/usefull-scripts.git
+cd usefull-scripts
+python csv_to_xml.py --task newparts [my_csv.csv] [my_xml.xml]
+```
