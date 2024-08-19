@@ -9,7 +9,7 @@ parser.add_argument("--location", help="Location", default = 'FNAL')
 parser.add_argument("--institution", help="Institution", default = 'Fermilab')
 parser.add_argument("--comment", help="Comment to add in subfield", default = '')
 parser.add_argument("--manufacturer", help="Manufacturer", default = 'TSMC')
-parser.add_argument("--date", help="Date format mm/dd/yy hh:mm PM or AM", default = '06/27/23 12:49 PM')
+parser.add_argument("--date", help="Date format mm/dd/yy hh:mm PM or AM", default = '2024-06-27')
 parser.add_argument("--nchips", help="Number of chips up to 100", default = '100')
 args = parser.parse_args()
 
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     # ECON-D first
     kind_of_part = 'ECON-D'
     batch_number = 'TO BE FILLED'
-    location = 'Baylor'
+    location = 'FNAL'
     institution = 'FermiLab'
     comment_description = 'Pre-series CM'
     manufacturer = args.manufacturer
@@ -90,7 +90,7 @@ if __name__ == '__main__':
         barcode = barcodes[kind_of_part]+serial_number
         
 
-        ship = '06/20/24'
+        ship = '2024-06-20'
         batch = '1'
         batch_number =  '0002-PS-18000'
         str_i = ''
@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
 
         if 'June 27' in el[4]:
-            ship = '06/27/24'
+            ship = '2024-06-27'
             batch = '2'
             str_i = ''
             if len(str(batch2)) == 1:
@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
 
         elif 'June 20' in el[4]:
-            ship = '06/20/24'
+            ship = '2024-06-20'
             batch = '1'
             str_i = ''
             if len(str(batch1)) == 1:
@@ -127,8 +127,8 @@ if __name__ == '__main__':
 
 
         name_label = name_label_template%(kind_of_part,batch_number.split('-')[2][:5],chip)
-        comment_description = 'Shipped on %s (batch %s)'%(ship,batch)
-        production_date = '05/31/24'
+        comment_description = 'Shipped on %s (batch %s) to Baylor'%(ship,batch)
+        production_date = '2024-05-31'
 
         out_csv += csv_tmp%(kind_of_part,serial_number,batch_number,barcode,name_label,location,institution,comment_description,manufacturer,production_date)
 
@@ -139,11 +139,11 @@ if __name__ == '__main__':
     # fill CSV file
     # ECON-D first
     kind_of_part = 'ECON-T'
-    location = 'Baylor'
+    location = 'FNAL'
     institution = 'FermiLab'
     comment_description = 'Pre-series CM'
     manufacturer = args.manufacturer
-    production_date = '05/31/24'
+    production_date = '2024-05-31' # YYYY-MM-DD
 
     batch1 = 1
     batch2 = 1
@@ -154,13 +154,13 @@ if __name__ == '__main__':
         serial_number = '%s%s'%(tray, chip)
         barcode = barcodes[kind_of_part]+serial_number
         
-        ship = '06/20/24'
+        ship = '2024-06-27' # YYYY-MM-DD
         batch = '1'
         batch_number =  '0002-PS-08000'
         str_i = ''
 
         if 'June 27' in el[4]:
-            ship = '06/27/24'
+            ship = '2024-06-27'
             batch = '2'
             str_i = ''
             if len(str(batch2)) == 1:
@@ -173,7 +173,7 @@ if __name__ == '__main__':
             batch2 += 1
 
         elif 'June 20' in el[4]:
-            ship = '06/20/24'
+            ship = '2024-06-20'
             if len(str(batch1)) == 1:
                 str_i = '0%d'%batch1
             else:
@@ -185,8 +185,8 @@ if __name__ == '__main__':
 
         name_label = name_label_template%(kind_of_part,batch_number.split('-')[2][:5],chip)
 
-        comment_description = 'Shipped on %s (batch %s)'%(ship,batch)
-        production_date = '05/31/24'
+        comment_description = 'Shipped on %s (batch %s) to Baylor'%(ship,batch)
+        production_date = '2024-05-31'
 
 
         out_csv += csv_tmp%(kind_of_part,serial_number,batch_number,barcode,name_label,location,institution,comment_description,manufacturer,production_date)
