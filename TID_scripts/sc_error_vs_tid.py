@@ -13,7 +13,14 @@ def getSCErrorsECOND(data, voltage, chip):
     word_err_cnt = []
     hasL1As = []
     Timestamps = []
+    Timestamps0 = []
+    Timestamps7 = []
+    Timestamps671 = []
     error_rates = []
+    tot = []
+    l1a0 = []
+    l1a7 = []
+    l1a67 = []
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
@@ -22,34 +29,127 @@ def getSCErrorsECOND(data, voltage, chip):
                     hasL1As = np.array(data[i]['tests'][j]['metadata']['HasL1A'])
                     errs = []
                     times = []
+                    errCounts0 = []
+                    errCounts7 = []
+                    errCounts67 = []
+                    times0 = []
+                    times7 = []
+                    times67 = []
                     for val in np.unique(hasL1As):
-                        counts = info[:, 1:].astype(int)[np.array(hasL1As)==val]
-                        print(voltage)
-                        print(val)
-                        print(counts)
-                        rollovers = (counts[1:] < counts[:-1]).sum(axis=0)
-                        print(rollovers)
-                        totalWords, totalErrors = rollovers * 2**32 + counts[-1]
-                        print(totalWords,totalErrors)
-                        errorRate = totalErrors/totalWords
-                        errs.append(errorRate)
+                        if len(np.unique(hasL1As)) == 1:
+                            counts = info[:, 1:].astype(int)[np.array(hasL1As)==val]
+                            rollovers = (counts[1:] < counts[:-1]).sum(axis=0)
+                            totalWords, totalErrors = rollovers * 2**32 + counts[-1]
+                            errorRate = totalErrors/totalWords
+                            errs.append(errorRate)
+                        else:
+                            if val == 0:
+                                counts = info[:, 1:].astype(int)[np.array(hasL1As)==val]
+                                errCounts0.append(counts)
+                                times0.append([np.datetime64(x) for x in info[:,0][hasL1As==val]])
+                            if val == 7:
+                                counts = info[:, 1:].astype(int)[np.array(hasL1As)==val]
+                                errCounts7.append(counts)
+                                times7.append([np.datetime64(x) for x in info[:,0][hasL1As==val]])
+                            if val == 67: 
+                                counts = info[:, 1:].astype(int)[np.array(hasL1As)==val]
+                                errCounts67.append(counts)
+                                times67.append([np.datetime64(x) for x in info[:,0][hasL1As==val]])
                         times.append(np.datetime64(info[:,0][hasL1As==val][-1]))
                     Timestamps.append(times)
+                    Timestamps0.append(times0)
+                    Timestamps7.append(times7)
+                    Timestamps671.append(times67)
                     error_rates.append(errs)
-    err_rates3 = []
+                    l1a0.append(errCounts0)
+                    l1a7.append(errCounts7)
+                    l1a67.append(errCounts67)
     Timestamps3 = []
     err_rates67 = []
     Timestamps67  = []
     for i in range(len(Timestamps)):
         if len(Timestamps[i]) == 3:
-            err_rates3.append(error_rates[i])
             Timestamps3.append(Timestamps[i])
         if len(Timestamps[i]) == 1:
             err_rates67.append(error_rates[i])
             Timestamps67.append(Timestamps[i])
 
-    err_rates3 = np.array(err_rates3)
-    Timestamps3 = np.array(Timestamps3)
+
+    wordcnt0 = []
+    wordcnt7 = []
+    wordcnt67 = []
+    errcnt0 = []
+    errcnt7 = []
+    errcnt67 = []
+    for i in range(len(l1a0)):
+        wordcnt0.append(np.array(l1a0[i])[0][:,0])
+        errcnt0.append(np.array(l1a0[i])[0][:,1])
+        wordcnt7.append(np.array(l1a7[i])[0][:,0])
+        errcnt7.append(np.array(l1a7[i])[0][:,1])
+        wordcnt67.append(np.array(l1a67[i])[0][:,0])
+        errcnt67.append(np.array(l1a67[i])[0][:,1])
+
+
+
+    correctedWords7 = []
+    correctedWords67 = []
+    for i in range(len(wordcnt7)):
+        correctedWords67.append(np.array(wordcnt67[i]) - np.array(wordcnt7[i])[-1])
+        correctedWords7.append(np.array(wordcnt7[i]) - np.array(wordcnt0[i])[-1])
+    
+    info0 = []
+    info7 = []
+    info67 = []
+
+    for i in range(len(wordcnt0)):
+        list1 = []
+        for j in range(len(wordcnt0[i])):
+            list1.append([Timestamps0[i][0][j], wordcnt0[i][j], errcnt0[i][j]])
+        info0.append(np.array(list1))
+
+    for i in range(len(correctedWords7)):
+        list1 = []
+        for j in range(len(correctedWords7[i])):
+            list1.append([Timestamps7[i][0][j], correctedWords7[i][j], errcnt7[i][j]])
+        info7.append(np.array(list1))
+    for i in range(len(correctedWords67)):
+        list1 = []
+        for j in range(len(correctedWords67[i])):
+            list1.append([Timestamps671[i][0][j], correctedWords67[i][j], errcnt67[i][j]])
+        info67.append(np.array(list1))
+
+    err0 = []
+    err7 = []
+    err67 = []
+    tim0 = []
+    tim7 = []
+    tim67 = []
+    for i in range(len(info0)):
+        counts = info0[i][:, 1:].astype(int)
+        rollovers = (counts[1:] < counts[:-1]).sum(axis=0)
+        totalWords, totalErrors = rollovers * 2**32 + counts[-1]
+        errorRate = totalErrors/totalWords
+        err0.append(errorRate)
+        tim0.append(Timestamps0[i][0][-1])
+    
+    for i in range(len(info7)):
+        counts = info7[i][:, 1:].astype(int)
+        rollovers = (counts[1:] < counts[:-1]).sum(axis=0)
+        totalWords, totalErrors = rollovers * 2**32 + counts[-1]
+        errorRate = totalErrors/totalWords
+        err7.append(errorRate)
+        tim7.append(Timestamps7[i][0][-1])
+        
+    for i in range(len(info67)):
+        counts = info67[i][:, 1:].astype(int)
+        rollovers = (counts[1:] < counts[:-1]).sum(axis=0)
+        totalWords, totalErrors = rollovers * 2**32 + counts[-1]
+        errorRate = totalErrors/totalWords
+        err67.append(errorRate)
+        tim67.append(Timestamps671[i][0][-1])
+    
+    err_rates3 = np.array((err0, err7, err67))
+    Timestamps3 = np.array((tim0, tim7, tim67))
     err_rates67 = np.array(err_rates67).flatten()
     Timestamps67 = np.array(Timestamps67).flatten()
     dim1, dim2 = Timestamps3.shape
@@ -66,15 +166,13 @@ def getSCErrorsECOND(data, voltage, chip):
     hasL1As = np.array([0,7,67])
     results = {
         f"{val}-L1As":{
-            f"ErrRate": np.array(err_rates3)[:,i] if i != 2 else np.array(list(np.array(err_rates3)[:,i]) + list(err_rates67)),
-            f"tid": tid3[:,i] if i!= 2 else np.array(list(tid3[:,i]) + list(tid67)),
-            "xray_on": xray_on3[:,i] if i!= 2 else np.array(list(xray_on3[:,i]) + list(xray_on67)),
-            'Timestamps': Timestamps3[:,i] if i!= 2 else np.array(list(Timestamps3[:,i]) + list(Timestamps67)),
+            f"ErrRate": np.array(err_rates3)[i,:] if i != 2 else np.array(list(np.array(err_rates3)[i,:]) + list(err_rates67)),
+            f"tid": tid3[i,:] if i!= 2 else np.array(list(tid3[i,:]) + list(tid67)),
+            "xray_on": xray_on3[i,:] if i!= 2 else np.array(list(xray_on3[i,:]) + list(xray_on67)),
+            'Timestamps': Timestamps3[i,:] if i!= 2 else np.array(list(Timestamps3[i,:]) + list(Timestamps67)),
         } for i, (val) in enumerate(np.unique(hasL1As))
     }
     return results
-
-
 
 
 def makeECONDSCPlots(scErrors,plots,timestamps = False):
@@ -120,6 +218,8 @@ def makeECONDSCPlots(scErrors,plots,timestamps = False):
         fig.savefig(f'{plots}/summary_word_err_err_rate_results_TIMESTAMPS.png', dpi=300, facecolor="w")
     else:
         fig.savefig(f'{plots}/summary_word_err_err_rate_results.png', dpi=300, facecolor="w")
+    plt.clf()
+    plt.close()
 
 
 def getSCErrorsECONT(data,voltage, chip):
