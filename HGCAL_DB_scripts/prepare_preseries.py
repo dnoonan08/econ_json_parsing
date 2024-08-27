@@ -126,7 +126,7 @@ if __name__ == '__main__':
             batch1+=1
 
 
-        name_label = name_label_template%(kind_of_part,batch_number.split('-')[2][:5],chip)
+        name_label = name_label_template%(kind_of_part,tray,chip)
         comment_description = 'Shipped on %s (batch %s) to Baylor'%(ship,batch)
         production_date = '2024-05-31'
 
@@ -183,7 +183,7 @@ if __name__ == '__main__':
             batch1+=1
 
 
-        name_label = name_label_template%(kind_of_part,batch_number.split('-')[2][:5],chip)
+        name_label = name_label_template%(kind_of_part,tray,chip)
 
         comment_description = 'Shipped on %s (batch %s) to Baylor'%(ship,batch)
         production_date = '2024-05-31'
