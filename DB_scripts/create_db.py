@@ -4,7 +4,7 @@ import pymongo
 import json
 from pymongo import MongoClient, InsertOne
 import os, glob
-
+import numpy as np
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--path", help="Path to JSON files", default = './data')
@@ -23,15 +23,16 @@ client = pymongo.MongoClient("mongodb://127.0.0.1:27017") # Connect to local dat
 client.drop_database(args.dbname)
 
 mydatabase = client[args.dbname] # create new database
-mycol = mydatabase[args.target] # dict of type {'unique_id' : json_full_report}
 
-fnames = glob.glob(args.path + '/' + '*.json')
+fnames = list(np.sort(glob.glob(args.path + "/report*.json")))
 print("Will add the files located in %s (total %d)"%(args.path,len(fnames)))
 
-for fname in fnames:
-    print(fname)
-    jsonFileUploader(fname,mycol)
-
+## Load all the JSON files in the database
+for i, (fname) in enumerate(fnames):
+    try:
+        jsonFileUploader(fname)
+    except Exception as e:
+        print(e, fname, i)
 
 
 #jsonObj = json.load(open("%s/data/report_ECOND_2024-04-17_21-49-01.json"%path,'r'))
