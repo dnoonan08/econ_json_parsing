@@ -10,6 +10,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--path", help="Path to JSON files", default = './data')
 parser.add_argument("--dbname", help="DB name", default = 'jsonDB')
 parser.add_argument("--target", help="ECOND or ECONT", default = 'ECOND')
+parser.add_argument("--dbaddress", help="DB name", default = 27017)
 args = parser.parse_args()
 
 # utility scripts
@@ -18,7 +19,7 @@ from json_uploader import jsonFileUploader
 
 
 
-client = pymongo.MongoClient("mongodb://127.0.0.1:27017") # Connect to local database
+client = pymongo.MongoClient("localhost",args.dbaddress) # Connect to local database
 
 client.drop_database(args.dbname)
 

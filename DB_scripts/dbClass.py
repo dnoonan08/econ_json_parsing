@@ -31,17 +31,17 @@ def getLatestFiles(x):
 class Database:
     def __init__(self, ip):
         ## this connects to the database
-        self.client = pymongo.MongoClient(ip)
+        self.client = pymongo.MongoClient('localhost',ip)
         self.session = self.client.start_session()
         self.db = self.client['jsonDB'] ## this name will probably change when we decide on an official name
 
-        def pllCapbankWidthPlot(self, lowerLim=None, upperLim=None, voltage = '1p2', econType = 'ECOND'):
-        #This function makes a plot of the PLL Capbank Width
-        #if the user provides a range it will plot only over that range
-        #if not it plots the capbank width over the whole dataset 
-        #for different voltages use the name argument and please provide a string
-        #1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
-        #Also use the ECON type argument to make request info for ECOND vs ECONT 
+    def pllCapbankWidthPlot(self, lowerLim=None, upperLim=None, voltage = '1p2', econType = 'ECOND'):
+            #This function makes a plot of the PLL Capbank Width
+            #if the user provides a range it will plot only over that range
+            #if not it plots the capbank width over the whole dataset 
+            #for different voltages use the name argument and please provide a string
+            #1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
+            #Also use the ECON type argument to make request info for ECOND vs ECONT 
         latestFilesWChipLimits = getLatestFiles(self.db['testPLLInfo'].find({'chip_number': {"$lt": upperLim, "$gt": lowerLim}, 'ECON_type': econType},{'chip_number':'$chip_number', 'Timestamp':'$Timestamp'}))
         latestFiles = getLatestFiles(self.db['testPLLInfo'].find({'ECON_type': econType},{'chip_number':'$chip_number', 'Timestamp':'$Timestamp'}))
         if voltage == '1p2':
@@ -51,7 +51,7 @@ class Database:
                 return capbankwidth
             else:
                 x = np.array(list(self.db['testPLLInfo'].find({'ECON_type': econType}, 
-{'width':'$test_info.test_pll_capbank_width_1_2.metadata.pll_capbank_width', '_id':0})))[latestFiles]
+                                                                  {'width':'$test_info.test_pll_capbank_width_1_2.metadata.pll_capbank_width', '_id':0})))[latestFiles]
                 capbankwidth = np.array([y['width'] for y in x if y != {}])
                 return capbankwidth
         if voltage == '1p08':
@@ -184,7 +184,7 @@ class Database:
             bist_result = ([y['bist_result'] for y in x if y != {}])
             return first_failure, bist_result
         else:
-            x = np.array(list(mydatabase['testBistInfo'].find({'ECON_type':'ECOND'},{'first_failure':'$test_info.test_bist.metadata.first_failure', 'bist_result':'$test_info.test_bist.metadata.bist_results', '_id':0})))[latestFiles]
+            x = np.array(list(self.db['testBistInfo'].find({'ECON_type':'ECOND'},{'first_failure':'$test_info.test_bist.metadata.first_failure', 'bist_result':'$test_info.test_bist.metadata.bist_results', '_id':0})))[latestFiles]
             first_failure = np.array([y['first_failure'] for y in x if y != {}])
             bist_result = ([y['bist_result'] for y in x if y != {}])
             return first_failure, bist_result
@@ -239,7 +239,7 @@ class Database:
         #Dividing the total number of tests passed over the total number of tests performed
         #please use the econType argument to specify ECOND or ECONT and it expects a string input
         latestFiles = getLatestFiles(self.db['TestSummary'].find({'ECON_type': econType},{'chip_number':'$chip_number', 'Timestamp':'$Timestamp'}))
-        x = np.array(list(mydatabase['TestSummary'].find({'ECON_type':econType},{'outcome':'$individual_test_outcomes', 'passed':'$summary.passed', 'total': '$summary.total', '_id':0})))[latestFiles]
+        x = np.array(list(self.db['TestSummary'].find({'ECON_type':econType},{'outcome':'$individual_test_outcomes', 'passed':'$summary.passed', 'total': '$summary.total', '_id':0})))[latestFiles]
         frac_passed = []
         for y in x:
             outcomes = y['outcome']
@@ -260,7 +260,7 @@ class Database:
         maps = ['passed', 'failed','error','skipped']
         counters = {}
         total = 0
-        for obj in np.array(list(mydatabase['TestSummary'].find({'ECON_type':econType},{'individual_test_outcomes':1, '_id':0})))[latestFiles]:
+        for obj in np.array(list(self.db['TestSummary'].find({'ECON_type':econType},{'individual_test_outcomes':1, '_id':0})))[latestFiles]:
             for key, value in obj['individual_test_outcomes'].items():
                 if value == 1:
                     if key in counters.keys():
