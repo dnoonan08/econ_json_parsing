@@ -31,7 +31,7 @@ def summaryPlot(results,econType,odir):
     #plt.show()
 
     fig.savefig(f'{odir}/summary_{econType}.png')
-
+    plt.clf()
 def summaryTestPlot(df, econType, odir):
     cmap = colors.ListedColormap(['green','red','yellow','blue'])
     ax = df.plot.barh(stacked=True, cmap=cmap, figsize=(10, 6))
@@ -67,7 +67,7 @@ def summaryTestPlot(df, econType, odir):
     plt.tight_layout()
     ax.invert_yaxis()
     plt.savefig(f'{odir}/summary_tests_error_{econType}.png')
-
+    plt.clf()
 mongo = Database(args.dbaddress)
 
 econtFracPassed = mongo.getFractionOfTestsPassed('ECONT')

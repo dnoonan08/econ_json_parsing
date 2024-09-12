@@ -40,7 +40,7 @@ def plot_pllCapbankWidth(array,voltage,ECON_type,odir):
     plt.xlabel('Capbank Width')
 
     plt.savefig(f'{odir}/{ECON_type}_Capbank_Width [{voltage}].png', dpi=300, facecolor = "w")
-
+    plt.clf()
     return plt
 
 mongo = Database(args.dbaddress)

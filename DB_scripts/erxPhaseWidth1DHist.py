@@ -40,7 +40,7 @@ def plot_eRxPhaseWidth(array,voltage,ECON_type,odir):
 
     plt.savefig(f'{odir}/Phase_width__of_all_eRx_{ECON_type} [{voltage}].png', dpi=300, facecolor = "w")
 
-
+    plt.clf()
     return plt
 
 mongo = Database(args.dbaddress)

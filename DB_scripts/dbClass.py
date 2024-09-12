@@ -36,9 +36,9 @@ class Database:
         self.db = self.client['jsonDB'] ## this name will probably change when we decide on an official name
 
     def pllCapbankWidthPlot(self, lowerLim=None, upperLim=None, voltage = '1p2', econType = 'ECOND'):
-            #This function makes a plot of the PLL Capbank Width
-            #if the user provides a range it will plot only over that range
-            #if not it plots the capbank width over the whole dataset 
+            #This function requests the PLL Capbank Width
+            #if the user provides a range it will request only over that range
+            #if not it request the capbank width over the whole dataset 
             #for different voltages use the name argument and please provide a string
             #1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
             #Also use the ECON type argument to make request info for ECOND vs ECONT 
@@ -75,9 +75,9 @@ class Database:
         
                     
     def prbsMaxWidthPlot(self, lowerLim=None, upperLim=None, voltage = '1p2', econType = 'ECOND'):
-        #This function makes a plot of the PRBS Max Width
-        #if the user provides a range it will plot only over that range
-        #if not it plots the capbank width over the whole dataset 
+        #This function request the PRBS Max Width
+        #if the user provides a range it will request only over that range
+        #if not it requests the prbs max width  over the whole dataset 
         #for different voltages use the name argument and please provide a string
         #1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
         #Also use the ECON type argument to make request info for ECOND vs ECONT 
@@ -113,9 +113,9 @@ class Database:
                     
                     
     def etxMaxWidthPlot(self, lowerLim=None, upperLim=None, voltage = '1p2', econType = 'ECOND'):
-        #This function makes a plot of the eTX Delay scan Max Width
-        #if the user provides a range it will plot only over that range
-        #if not it plots the capbank width over the whole dataset 
+        #This function requests the eTX Delay scan Max Width
+        #if the user provides a range it will request only over that range
+        #if not it reqyests the delay scan max width  over the whole dataset 
         #for different voltages use the name argument and please provide a string
         #1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
         #Also use the ECON type argument to make request info for ECOND vs ECONT 
@@ -150,9 +150,9 @@ class Database:
                 return maxwidth
 
     def getVoltageAndCurrent(self, lowerLim=None, upperLim=None, econType = 'ECOND'):
-        #This function makes a plot of the PLL Capbank Width
-        #if the user provides a range it will plot only over that range
-        #if not it plots the capbank width over the whole dataset 
+        #This function request the voltage and current draw for each chip
+        #if the user provides a range it will request  only over that range
+        #if not it request the distributions  over the whole dataset 
         #for different voltages use the name argument and please provide a string
         # 1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
         #Also use the ECON type argument to make request info for ECOND vs ECONT 
@@ -170,9 +170,9 @@ class Database:
             return current, voltage
 
     def getBISTInfo(self, lowerLim=None, upperLim=None, econType='ECOND'):
-        #This function makes a plot of the PLL Capbank Width
-        #if the user provides a range it will plot only over that range
-        #if not it plots the capbank width over the whole dataset 
+        #This function requests the bist test information
+        #if the user provides a range it will request  only over that range
+        #if not it requests the bist test information over the whole dataset 
         #for different voltages use the name argument and please provide a string
         # 1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
         #Also use the ECON type argument to make request info for ECOND vs ECONT 
