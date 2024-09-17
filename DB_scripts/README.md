@@ -4,7 +4,7 @@ Scripts to create, parse and plot the local DB informations from Fermilab Robot 
 # Setting up the environment
 To setup the database on ```cmsnghcal01``` use the following command
 ```
-sudo mongod -dbpaht <PATH/TO/DB/FOLDER>
+sudo mongod -dbpath <PATH/TO/DB/FOLDER>
 ```
 currently I have an example database setup at ```acampbell/DATABASE``` on ```cmsnghcal01```
 
