@@ -43,9 +43,11 @@ def plot_pllCapbankWidth(array,voltage,ECON_type,odir):
     plt.clf()
     return plt
 
-mongo = Database(args.dbaddress)
+mongo_d = Database(args.dbaddress,client='econdDB')
+mongo_t = Database(args.dbaddress,client='econtDB')
+
 
 temp = [['1p08', '1p2', '1p32'], [1.08, 1.2, 1.32]]
 for i in range(3):
-    plot_pllCapbankWidth(mongo.pllCapbankWidthPlot(voltage=temp[0][i], econType = 'ECOND'), voltage = temp[1][i], ECON_type='ECON-D', odir=odir)
-    plot_pllCapbankWidth(mongo.pllCapbankWidthPlot(voltage=temp[0][i], econType = 'ECONT'), voltage = temp[1][i], ECON_type='ECON-T', odir=odir)
+    plot_pllCapbankWidth(mongo_d.pllCapbankWidthPlot(voltage=temp[0][i], econType = 'ECOND'), voltage = temp[1][i], ECON_type='ECON-D', odir=odir)
+    plot_pllCapbankWidth(mongo_t.pllCapbankWidthPlot(voltage=temp[0][i], econType = 'ECONT'), voltage = temp[1][i], ECON_type='ECON-T', odir=odir)

@@ -27,11 +27,13 @@ def plot_pllCapbankWidth_2D(voltage,pll_capbank_width,ymin,ymax,N,econType,odir)
     plt.savefig(f'{odir}/pllCapbankWidth2DHist_{econType}.png',facecolor='w',dpi=300)
     plt.clf()
 
-mongo = Database(args.dbaddress)
-numchips = (len((mongo.pllCapbankWidthPlot(voltage='1p08', econType = 'ECOND'))))
-econd1p08capwidth = mongo.pllCapbankWidthPlot(voltage='1p08', econType = 'ECOND')
-econd1p2capwidth = mongo.pllCapbankWidthPlot(voltage='1p2', econType = 'ECOND')
-econd1p32capwidth = mongo.pllCapbankWidthPlot(voltage='1p32', econType = 'ECOND')
+mongo_d = Database(args.dbaddress,client='econdDB')
+mongo_t = Database(args.dbaddress,client='econtDB')
+
+numchips = (len((mongo_d.pllCapbankWidthPlot(voltage='1p08', econType = 'ECOND'))))
+econd1p08capwidth = mongo_d.pllCapbankWidthPlot(voltage='1p08', econType = 'ECOND')
+econd1p2capwidth = mongo_d.pllCapbankWidthPlot(voltage='1p2', econType = 'ECOND')
+econd1p32capwidth = mongo_d.pllCapbankWidthPlot(voltage='1p32', econType = 'ECOND')
 capbank_width = []
 voltage = []
 
@@ -46,10 +48,10 @@ for i in range((numchips)):
 N = numchips
 plot_pllCapbankWidth_2D(voltage,capbank_width,0,15,N,econType='ECOND',odir= args.odir + '/pllCapbank2D')
 
-numchips = (len((mongo.pllCapbankWidthPlot(voltage='1p08', econType = 'ECONT'))))
-econt1p08capwidth = mongo.pllCapbankWidthPlot(voltage='1p08', econType = 'ECONT')
-econt1p2capwidth = mongo.pllCapbankWidthPlot(voltage='1p2', econType = 'ECONT')
-econt1p32capwidth = mongo.pllCapbankWidthPlot(voltage='1p32', econType = 'ECONT')
+numchips = (len((mongo_t.pllCapbankWidthPlot(voltage='1p08', econType = 'ECONT'))))
+econt1p08capwidth = mongo_t.pllCapbankWidthPlot(voltage='1p08', econType = 'ECONT')
+econt1p2capwidth = mongo_t.pllCapbankWidthPlot(voltage='1p2', econType = 'ECONT')
+econt1p32capwidth = mongo_t.pllCapbankWidthPlot(voltage='1p32', econType = 'ECONT')
 capbank_width = []
 voltage = []
 
