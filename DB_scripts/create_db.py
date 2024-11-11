@@ -31,7 +31,7 @@ print("Will add the files located in %s (total %d)"%(args.path,len(fnames)))
 ## Load all the JSON files in the database
 for i, (fname) in enumerate(fnames):
     try:
-        jsonFileUploader(fname)
+        jsonFileUploader(fname,mydatabase)
     except Exception as e:
         print(e, fname, i)
 

@@ -46,7 +46,11 @@ def delay_scan_plots(errcounts,
 
 
 
-mongo = Database(args.dbaddress)
+if args.econType == 'ECOND':
+    client = 'econdDB'
+else:
+    client = 'econdtDB'
+mongo = Database(args.dbaddress,client= client)
 bitcounts, errcounts = mongo.delayScan2DPlot(args.chipNum, econType = args.econType, voltage = args.voltage)
 
 delay_scan_plots(errcounts, bitcounts, args.econType, args.voltage, args.chipNum, args.odir+'/DelayScanErrors')

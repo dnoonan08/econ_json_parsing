@@ -42,11 +42,11 @@ def constructQueryPipeline(query_map, econType='ECOND', lowerLim = None, upperLi
     return pipeline
 
 class Database:
-    def __init__(self, ip):
+    def __init__(self, ip, client):
         ## this connects to the database
         self.client = pymongo.MongoClient('localhost',ip)
         self.session = self.client.start_session()
-        self.db = self.client['jsonDB'] ## this name will probably change when we decide on an official name
+        self.db = self.client[client] ## this name will probably change when we decide on an official name
 
     def pllCapbankWidthPlot(self, lowerLim=None, upperLim=None, voltage = '1p2', econType = 'ECOND'):
         #This function makes a plot of the PLL Capbank Width

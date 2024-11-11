@@ -48,10 +48,13 @@ def plot_delayscan_2D(voltage,delay_width,ymin,ymax,N,ECON_type,io_type,odir):
         axs[2,4].remove()
     fig.savefig(f'{odir}/eRxPhaseScan2D_{ECON_type}.png', facecolor='w', dpi=300)
 
-mongo = Database(args.dbaddress)
-erxPhase1p08 = mongo.prbsMaxWidthPlot(voltage='1p08', econType = 'ECOND')
-erxPhase1p2 = mongo.prbsMaxWidthPlot(voltage='1p2', econType = 'ECOND')
-erxPhase1p32 = mongo.prbsMaxWidthPlot(voltage='1p32', econType = 'ECOND')
+mongo_d = Database(args.dbaddress,client = 'econdDB')
+mongo_t = Database(args.dbaddress,client = 'econtDB')
+
+
+erxPhase1p08 = mongo_d.prbsMaxWidthPlot(voltage='1p08', econType = 'ECOND')
+erxPhase1p2 = mongo_d.prbsMaxWidthPlot(voltage='1p2', econType = 'ECOND')
+erxPhase1p32 = mongo_d.prbsMaxWidthPlot(voltage='1p32', econType = 'ECOND')
 N = len(erxPhase1p08)
 voltages = []
 widths = []
@@ -70,9 +73,9 @@ for i in range(12):
 
 plot_delayscan_2D(voltages,widths,0,7,N,'ECOND','eRx', odir)
     
-erxPhase1p08 = mongo.prbsMaxWidthPlot(voltage='1p08', econType = 'ECONT')
-erxPhase1p2 = mongo.prbsMaxWidthPlot(voltage='1p2', econType = 'ECONT')
-erxPhase1p32 = mongo.prbsMaxWidthPlot(voltage='1p32', econType = 'ECONT')
+erxPhase1p08 = mongo_t.prbsMaxWidthPlot(voltage='1p08', econType = 'ECONT')
+erxPhase1p2 = mongo_t.prbsMaxWidthPlot(voltage='1p2', econType = 'ECONT')
+erxPhase1p32 = mongo_t.prbsMaxWidthPlot(voltage='1p32', econType = 'ECONT')
 N = len(erxPhase1p08)
 voltages = []
 widths = []

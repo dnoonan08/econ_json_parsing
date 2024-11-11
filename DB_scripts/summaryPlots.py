@@ -1,3 +1,4 @@
+from http import client
 import numpy as np
 import matplotlib.pyplot as plt
 from dbClass import Database
@@ -68,16 +69,31 @@ def summaryTestPlot(df, econType, odir):
     ax.invert_yaxis()
     plt.savefig(f'{odir}/summary_tests_error_{econType}.png')
     plt.clf()
-mongo = Database(args.dbaddress)
+mongo_d = Database(args.dbaddress, client='econdDB')
+mongo_t = Database(args.dbaddress, client='econtDB')
 
-econtFracPassed = mongo.getFractionOfTestsPassed('ECONT')
-econdFracPassed = mongo.getFractionOfTestsPassed()
+econtFracPassed = mongo_t.getFractionOfTestsPassed('ECONT')
+econdFracPassed = mongo_d.getFractionOfTestsPassed()
 
-summaryPlot(econtFracPassed, econType='ECONT', odir=odir)
-summaryPlot(econdFracPassed, econType='ECOND', odir=odir)
+try:
+    summaryPlot(econdFracPassed, econType='ECOND', odir=odir)
+except:
+    print("Issue running ECOND")
 
-econtDF = mongo.getTestingSummaries('ECONT')
-econdDF = mongo.getTestingSummaries()
+try:
+    summaryPlot(econtFracPassed, econType='ECONT', odir=odir)
+except:
+    print("Issue running ECONT")
 
-summaryTestPlot(econtDF, 'ECONT', odir=odir)
-summaryTestPlot(econdDF, 'ECOND', odir=odir)
+econtTF = mongo_t.getTestingSummaries('ECONT')
+econdDF = mongo_d.getTestingSummaries()
+
+
+try:
+    summaryTestPlot(econdDF, 'ECOND', odir=odir)
+except:
+    print("Issue running summary for ECOND")
+try:
+    summaryTestPlot(econtTF, 'ECONT', odir=odir)
+except:
+    print("Issue running summary for ECONT")

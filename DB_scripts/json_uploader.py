@@ -6,6 +6,7 @@ from pymongo import MongoClient, InsertOne
 import numpy as np
 import glob
 import json
+from datetime import datetime
 
 def selector(input):
     if input == 'passed':
@@ -53,7 +54,7 @@ def jsonFileUploader(fname, mydatabase):
         key: data[key] for key in non_testing_keys
     }
 
-        testingSummary = {
+    testingSummary = {
             "summary": {'passed': data['summary']['passed'], 'total':data['summary']['total'], 'collected':data['summary']['collected']},
             "individual_test_outcomes": {
                  f"{stringReplace(test['nodeid'].split('::')[1])}": selector(test['outcome']) for test in data['tests']

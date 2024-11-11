@@ -56,10 +56,12 @@ def plot_currentDraw(array_v, array_c, ECON_type, odir):
     
     return plt
 
-mongo = Database(args.dbaddress)
+mongo_d = Database(args.dbaddress, client = 'econdDB')
+mongo_t = Database(args.dbaddress, client = 'econtDB')
 
-current, voltage = mongo.getVoltageAndCurrent()
+
+current, voltage = mongo_d.getVoltageAndCurrent()
 plot_currentDraw(voltage, current, ECON_type = 'ECON-D', odir=odir)
 
-current, voltage = mongo.getVoltageAndCurrent(econType = 'ECONT')
+current, voltage = mongo_t.getVoltageAndCurrent(econType = 'ECONT')
 plot_currentDraw(voltage, current, ECON_type = 'ECON-T', odir=odir)

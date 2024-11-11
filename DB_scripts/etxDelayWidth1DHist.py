@@ -43,10 +43,12 @@ def plot_eTxWidth(array,voltage,ECON_type,odir):
     plt.clf()
     return plt
 
-mongo = Database(args.dbaddress)
+mongo_d = Database(args.dbaddress,client='econdDB')
+mongo_t = Database(args.dbaddress, client = 'econtDB')
+
 
 temp = [['1p08', '1p2', '1p32'], [1.08, 1.2, 1.32]]
 for i in range(3):
-    plot_eTxWidth(mongo.etxMaxWidthPlot(voltage=temp[0][i], econType = 'ECOND'), voltage = temp[1][i], ECON_type='ECON-D', odir=odir)
-    plot_eTxWidth(mongo.etxMaxWidthPlot(voltage=temp[0][i], econType = 'ECONT'), voltage = temp[1][i], ECON_type='ECON-T', odir=odir)
+    plot_eTxWidth(mongo_d.etxMaxWidthPlot(voltage=temp[0][i], econType = 'ECOND'), voltage = temp[1][i], ECON_type='ECON-D', odir=odir)
+    plot_eTxWidth(mongo_t.etxMaxWidthPlot(voltage=temp[0][i], econType = 'ECONT'), voltage = temp[1][i], ECON_type='ECON-T', odir=odir)
 
