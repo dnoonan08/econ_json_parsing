@@ -53,7 +53,9 @@ def jsonFileUploader(fname, mydatabase):
     non_testing_info = {
         key: data[key] for key in non_testing_keys
     }
-
+    for test in data['tests']:
+        if 'stream' in test['nodeid']:
+            test['metadata']['snapshots'] = str(test['metadata']['snapshots'])
     testingSummary = {
             "summary": {'passed': data['summary']['passed'], 'total':data['summary']['total'], 'collected':data['summary']['collected']},
             "individual_test_outcomes": {
@@ -417,6 +419,31 @@ def jsonFileUploader(fname, mydatabase):
         'ECON_type':(fname.split("report"))[1].split("_")[1],
         'Timestamp':datetime.strptime((fname.split('/')[-1].split('chip')[-1].split('_')[-2] + ' '+fname.split('/')[-1].split('chip')[-1].split('_')[-1].split('.')[0]), "%Y-%m-%d %H-%M-%S"),
     }
+    try:
+        test_OBerror_info = {
+            'test_info':{f"{stringReplace(test['nodeid'].split('::')[1])}": {'metadata':test['metadata'] if 'metadata' in test else None,
+                                                           'outcome': test['outcome'],
+                                                           'keywords': test['keywords'],
+                                                           'setup':test['setup'] if 'setup' in test else None,
+                                                           'call':test['call'] if 'call' in test else None,
+                                                           'teardown':test['teardown'] if 'teardown' in test else None,
+                                                           'failure_information':grabFailureInfo(test),
+                                                           } for test in data['tests'] if 'test_obsram_voltages_fastscan' in test['nodeid']},
+            "chip_number": data["chip_number"],
+            "branch": data['branch'],
+            'commit_hash': data['commit_hash'],
+            'remote_url': data['remote_url'],
+            'FPGA-hexa-IP': data['FPGA-hexa-IP'],
+            'status': data['status'],
+            'firmware_name': data['firmware_name'],
+            'firmware_git_desc': data['firmware_git_desc'],
+            'filename': fname,
+            'ECON_type':(fname.split("report"))[1].split("_")[1],
+            'Timestamp':datetime.strptime((fname.split('/')[-1].split('chip')[-1].split('_')[-2] + ' '+fname.split('/')[-1].split('chip')[-1].split('_')[-1].split('.')[0]), "%Y-%m-%d %H-%M-%S"),
+        }
+        mydatabase['testOBError'].insert_one(test_OBerror_info)
+    except Exception as e:
+        print(f'{e}, no OB error test available')
     ## Insert File into the DB 
     mydatabase['NonTestingInfo'].insert_one(non_testing_info)
     mydatabase['testI2CInfo'].insert_one(i2c_info)
