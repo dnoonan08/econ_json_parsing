@@ -426,4 +426,55 @@ class Database:
         
 
         
+
+    def testOBErrorInfo(self, econType = 'ECOND', voltage = '0p99'):
+        #Returns info from the OB error test
+        #This returns DAQ_asic, DAQ_emu, DAQ_counter, and word_err_cnt
+        #This is done for the voltages 0.99, 1.03, and 1.08
+        #specify which voltage you want when calling the function
+        # 0p99 for 0.99, 1p03 for 1.03, and 1p08 for 1.08V
         
+        voltage_field_map = {
+        '0p99': {
+                'DAQ_asic':'test_info.test_streamCompareLoop_0_99.metadata.DAQ_asic',
+                'DAQ_emu':'test_info.test_streamCompareLoop_0_99.metadata.DAQ_emu',
+                'DAQ_counter':'test_info.test_streamCompareLoop_0_99.metadata.DAQ_counter',
+                'word_err_count':'test_info.test_streamCompareLoop_0_99.metadata.word_err_count',
+                },
+        '1p03': {
+                'DAQ_asic':'test_info.test_streamCompareLoop_1_03.metadata.DAQ_asic',
+                'DAQ_emu':'test_info.test_streamCompareLoop_1_03.metadata.DAQ_emu',
+                'DAQ_counter':'test_info.test_streamCompareLoop_1_03.metadata.DAQ_counter',
+                'word_err_count':'test_info.test_streamCompareLoop_1_03.metadata.word_err_count',
+                },
+        '1p08': {
+                'DAQ_asic':'test_info.test_streamCompareLoop_1_08.metadata.DAQ_asic',
+                'DAQ_emu':'test_info.test_streamCompareLoop_1_08.metadata.DAQ_emu',
+                'DAQ_counter':'test_info.test_streamCompareLoop_1_08.metadata.DAQ_counter',
+                'word_err_count':'test_info.test_streamCompareLoop_1_08.metadata.word_err_count',
+                },
+        }
+        if voltage not in voltage_field_map:
+            raise ValueError("Invalid voltage specified. Choose from '1p08', '1p2', '1p32'.")
+        query_map = voltage_field_map[voltage]
+        pipeline = constructQueryPipeline(query_map, econType=econType)
+        cursor = self.db['testOBError'].aggregate(pipeline)
+        documents = list(cursor)
+        DAQ_asic = ([
+            doc['latest_data']['DAQ_asic'] for doc in documents 
+            if doc.get('latest_data') is not None and 'DAQ_asic' in doc['latest_data'].keys()
+        ])
+        
+        DAQ_emu = ([
+            doc['latest_data']['DAQ_emu'] for doc in documents 
+            if doc.get('latest_data') is not None and 'DAQ_emu' in doc['latest_data'].keys()
+        ])
+        DAQ_counter = ([
+            doc['latest_data']['DAQ_counter'] for doc in documents 
+            if doc.get('latest_data') is not None and 'DAQ_counter' in doc['latest_data'].keys()
+        ])
+        word_err_count = ([
+            doc['latest_data']['word_err_count'] for doc in documents 
+            if doc.get('latest_data') is not None and 'word_err_count' in doc['latest_data'].keys()
+        ])
+        return DAQ_asic, DAQ_emu, DAQ_counter, word_err_count
