@@ -68,6 +68,7 @@ def jsonFileUploader(fname, mydatabase):
             'firmware_name': data['firmware_name'],
             'firmware_git_desc': data['firmware_git_desc'],
             'filename': fname,
+            'duration': data['duration'],
             'ECON_type':(fname.split("report"))[1].split("_")[1],
             'Timestamp':datetime.strptime((fname.split('/')[-1].split('chip')[-1].split('_')[-2] + ' '+fname.split('/')[-1].split('chip')[-1].split('_')[-1].split('.')[0]), "%Y-%m-%d %H-%M-%S"),
             }
