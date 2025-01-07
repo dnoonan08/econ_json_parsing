@@ -53,9 +53,14 @@ def jsonFileUploader(fname, mydatabase):
     non_testing_info = {
         key: data[key] for key in non_testing_keys
     }
+
     for test in data['tests']:
         if 'stream' in test['nodeid']:
-            test['metadata']['snapshots'] = str(test['metadata']['snapshots'])
+            try:
+                test['metadata']['snapshots'] = str(test['metadata']['snapshots'])
+            except:
+                print(f'No metadata in {test["nodeid"]}')
+    
     testingSummary = {
             "summary": {'passed': data['summary']['passed'], 'total':data['summary']['total'], 'collected':data['summary']['collected']},
             "individual_test_outcomes": {
@@ -70,6 +75,7 @@ def jsonFileUploader(fname, mydatabase):
             'firmware_name': data['firmware_name'],
             'firmware_git_desc': data['firmware_git_desc'],
             'filename': fname,
+            'duration': data['duration'],
             'ECON_type':(fname.split("report"))[1].split("_")[1],
             'Timestamp':datetime.strptime((fname.split('/')[-1].split('chip')[-1].split('_')[-2] + ' '+fname.split('/')[-1].split('chip')[-1].split('_')[-1].split('.')[0]), "%Y-%m-%d %H-%M-%S"),
             }

@@ -8,7 +8,7 @@ import numpy as np
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--path", help="Path to JSON files", default = './data')
-parser.add_argument("--dbname", help="DB name", default = 'jsonDB')
+parser.add_argument("--dbname", help="DB name", default = 'econdDB')
 parser.add_argument("--target", help="ECOND or ECONT", default = 'ECOND')
 parser.add_argument("--dbaddress", help="DB name", default = 27017)
 args = parser.parse_args()
@@ -21,7 +21,7 @@ from json_uploader import jsonFileUploader
 
 client = pymongo.MongoClient("localhost",args.dbaddress) # Connect to local database
 
-client.drop_database(args.dbname)
+#client.drop_database(args.dbname)
 
 mydatabase = client[args.dbname] # create new database
 
@@ -30,6 +30,7 @@ print("Will add the files located in %s (total %d)"%(args.path,len(fnames)))
 
 ## Load all the JSON files in the database
 for i, (fname) in enumerate(fnames):
+
     try:
         jsonFileUploader(fname,mydatabase)
     except Exception as e:

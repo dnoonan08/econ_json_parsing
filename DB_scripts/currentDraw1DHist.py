@@ -12,13 +12,13 @@ odir = args.odir + '/currentDraw1D'
 if not os.path.isdir(odir):
     os.makedirs(odir)
 
-def plot_currentDraw(array_v, array_c, ECON_type, odir):
+def plot_currentDraw(array_v, array_c, ECON_type, odir,tray_number = 'all'):
     fig, hist = plt.subplots(1, 2, figsize=(16,6))
 
     #Plotting the current of all the tested chips
-    hist[0].hist(array_c, log = True, bins= np.arange(0.24,0.37,0.005),color='b',alpha=0.5,label=f"Current \u03BC:{np.mean(array_c):.3f} \u03C3:{np.std(array_c):.3f}")
+    hist[0].hist(array_c, log = True, bins= np.arange(0.2,0.37,0.001),color='b',alpha=0.5,label=f"Current \u03BC:{np.mean(array_c):.3f} \u03C3:{np.std(array_c):.3f}")
     
-    underflow_current = np.sum(array_c < 0.24)
+    underflow_current = np.sum(array_c < 0.2)
     overflow_current = np.sum(array_c > 0.37)
     legend_text_current = f'Underflow: {underflow_current}, Overflow: {overflow_current}'
 
@@ -52,7 +52,7 @@ def plot_currentDraw(array_v, array_c, ECON_type, odir):
     hist[1].set_ylabel('Count')
     hist[1].set_xlabel('Voltage (V)')
     plt.tight_layout()
-    plt.savefig(f'{odir}/Power_{ECON_type}.png', dpi=300, facecolor = "w")
+    plt.savefig(f'{odir}/Power_{ECON_type}_{tray_number}.png', dpi=300, facecolor = "w")
     
     return plt
 
@@ -63,5 +63,40 @@ mongo_t = Database(args.dbaddress, client = 'econtDB')
 current, voltage = mongo_d.getVoltageAndCurrent()
 plot_currentDraw(voltage, current, ECON_type = 'ECON-D', odir=odir)
 
+# 14
+current, voltage = mongo_d.getVoltageAndCurrent(lowerLim=1400, upperLim = 1500)
+plot_currentDraw(voltage, current, ECON_type = 'ECON-D', odir=odir, tray_number = '14')
+
+# 15
+current, voltage = mongo_d.getVoltageAndCurrent(lowerLim=1500, upperLim = 1600)
+plot_currentDraw(voltage, current, ECON_type = 'ECON-D', odir=odir, tray_number = '15')
+
+# 16
+current, voltage = mongo_d.getVoltageAndCurrent(lowerLim=1600, upperLim = 1700)
+plot_currentDraw(voltage, current, ECON_type = 'ECON-D', odir=odir, tray_number = '16')
+
+# 17
+current, voltage = mongo_d.getVoltageAndCurrent(lowerLim=1700, upperLim = 1800)
+plot_currentDraw(voltage, current, ECON_type = 'ECON-D', odir=odir, tray_number = '17')
+
+# 18
+current, voltage = mongo_d.getVoltageAndCurrent(lowerLim=1800, upperLim = 1900)
+plot_currentDraw(voltage, current, ECON_type = 'ECON-D', odir=odir, tray_number = '18')
+
+# 19
+current, voltage = mongo_d.getVoltageAndCurrent(lowerLim=1900, upperLim = 2000)
+plot_currentDraw(voltage, current, ECON_type = 'ECON-D', odir=odir, tray_number = '19')
+
+# 20
+current, voltage = mongo_d.getVoltageAndCurrent(lowerLim=2000, upperLim = 2100)
+plot_currentDraw(voltage, current, ECON_type = 'ECON-D', odir=odir, tray_number = '20')
+
+# 21
+current, voltage = mongo_d.getVoltageAndCurrent(lowerLim=2100, upperLim = 2200)
+plot_currentDraw(voltage, current, ECON_type = 'ECON-D', odir=odir, tray_number = '21')
+
+
 current, voltage = mongo_t.getVoltageAndCurrent(econType = 'ECONT')
 plot_currentDraw(voltage, current, ECON_type = 'ECON-T', odir=odir)
+
+

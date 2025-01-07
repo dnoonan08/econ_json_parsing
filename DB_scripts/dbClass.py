@@ -142,7 +142,7 @@ class Database:
         ])
         return current, voltage
 
-    def getBISTInfo(self, lowerLim=None, upperLim=None, econType='ECOND'):
+    def getBISTInfo(self, lowerLim=None, upperLim=None, econType='ECOND',tray_number = None):
         #This function makes a plot of the PLL Capbank Width
         #if the user provides a range it will plot only over that range
         #if not it plots the capbank width over the whole dataset 
@@ -161,6 +161,10 @@ class Database:
         pipeline = constructQueryPipeline(query_map, econType=econType, lowerLim = lowerLim, upperLim=upperLim)
         cursor = self.db['testBistInfo'].aggregate(pipeline)
         documents = list(cursor)
+
+        if tray_number is not None:
+            documents = self.filter_by_tray(documents, tray_number)
+            
         first_failure = np.array([
             doc['latest_data']['first_failure'] for doc in documents 
             if doc.get('latest_data') is not None and 'first_failure' in doc['latest_data'].keys()
@@ -219,7 +223,7 @@ class Database:
         pipeline = constructQueryPipeline(query_map, econType=econType, chipNum=chipNum)
         cursor = self.db['testIOInfo'].aggregate(pipeline)
         documents = list(cursor)
-        print(documents)
+        #print(documents)
         eTX_bitcounts = np.array([
             doc['latest_data']['eTX_bitcounts'] for doc in documents 
             if doc.get('latest_data') is not None and 'eTX_bitcounts' in doc['latest_data'].keys()
@@ -232,7 +236,7 @@ class Database:
         return eTX_bitcounts, eTX_errcounts
         
 
-    def getFractionOfTestsPassed(self, econType = 'ECOND'):
+    def getFractionOfTestsPassed(self, econType = 'ECOND',tray_number = None):
         #This function grabs the fraction of tests that passed
         #So what this does is first count the number of tests that got skipped
         #And subtracts this from the total number of tests that were collected
@@ -251,11 +255,15 @@ class Database:
         pipeline = constructQueryPipeline(query_map, econType=econType)
         cursor = self.db['TestSummary'].aggregate(pipeline)
         x = list(cursor)
+
+        if tray_number is not None:
+            x = self.filter_by_tray(x, tray_number)
         frac_passed = []
         # Extract outcomes, passed, and total
         outcomes = np.array([doc['latest_data']['outcome'] for doc in x])
         passed = np.array([doc['latest_data']['passed'] for doc in x])
         total = np.array([doc['latest_data']['total'] for doc in x])
+        chip_numbers = np.array([doc['_id']for doc in x])
         
         # Iterate over each outcome to compute fractions
         for i in range(len(outcomes)):
@@ -271,9 +279,9 @@ class Database:
             frac_passed.append(frac)
         
         # Convert to NumPy array
-        return np.array(frac_passed)
+        return np.array(frac_passed), chip_numbers
         
-    def getTestingSummaries(self, econType = 'ECOND'):
+    def getTestingSummaries(self, econType = 'ECOND',tray_number = None):
         #This function returns a dataframe for the testing summary plots prepared by Marko
         #Please use the econType argument to specify ECOND or ECONT and the function expects a string for this argument
         voltage_field_map = {
@@ -285,6 +293,13 @@ class Database:
         pipeline = constructQueryPipeline(query_map, econType=econType)
         cursor = self.db['TestSummary'].aggregate(pipeline)
         outcomes = list(cursor)
+
+        #for el in outcomes:
+        #    print(el.keys())
+
+        if tray_number is not None:
+            outcomes = self.filter_by_tray(outcomes, tray_number)
+
         # Prepare a counter array for 'passed', 'failed', 'error', 'skipped'
         maps = ['passed', 'failed','error','skipped']
         counters = {}
@@ -317,9 +332,37 @@ class Database:
         df = df.T
         df = df/total
         return df
-        
+    def getDuration(self, econType='ECOND', tray_number = None):
+        durations = self.db['NonTestingInfo'].find({},{'created':'$created', 'duration':'$duration', 'chip_number':'$chip_number', '_id':0})
 
-    def testOBErrorInfo(self, econType = 'ECOND', voltage = '0p99'):
+        if tray_number is not None:
+            durations = self.filter_by_tray(durations, tray_number)
+        return np.array([chip['duration'] for chip in list(durations)])
+
+    def filter_by_tray(self, documents, tray_number):
+    # Filter documents by tray number
+        filtered_docs = []
+        label = 'chip_number'
+        try:
+            if 'chip_number' not in documents[0].keys():
+                label = '_id'
+        except: label = '_id'
+        #print(documents)
+        for doc in documents:
+            chip_number = doc.get(label)
+            if chip_number and str(chip_number).startswith(str(tray_number)):
+                filtered_docs.append(doc)
+            #print(chip_number)
+        return filtered_docs
+    
+    def getTrayNumbers(self, econType='ECOND'):
+        field_map = {'chip_number': '$chip_number', '_id':0}
+        trays = self.db['NonTestingInfo'].find({},field_map)
+
+        trays = [str(chip['chip_number'])[:2] for chip in trays]
+        return sorted(list(set(trays)))
+
+    def testOBErrorInfo(self, econType = 'ECOND', voltage = '0p99',tray_number = None):
         #Returns info from the OB error test
         #This returns DAQ_asic, DAQ_emu, DAQ_counter, and word_err_cnt
         #This is done for the voltages 0.99, 1.03, and 1.08
@@ -328,21 +371,21 @@ class Database:
         
         voltage_field_map = {
         '0p99': {
-                'DAQ_asic':'test_info.test_streamCompareLoop_0_99.metadata.DAQ_asic',
-                'DAQ_emu':'test_info.test_streamCompareLoop_0_99.metadata.DAQ_emu',
-                'DAQ_counter':'test_info.test_streamCompareLoop_0_99.metadata.DAQ_counter',
+                #'DAQ_asic':'test_info.test_streamCompareLoop_0_99.metadata.DAQ_asic',
+                #'DAQ_emu':'test_info.test_streamCompareLoop_0_99.metadata.DAQ_emu',
+                #'DAQ_counter':'test_info.test_streamCompareLoop_0_99.metadata.DAQ_counter',
                 'word_err_count':'test_info.test_streamCompareLoop_0_99.metadata.word_err_count',
                 },
         '1p03': {
-                'DAQ_asic':'test_info.test_streamCompareLoop_1_03.metadata.DAQ_asic',
-                'DAQ_emu':'test_info.test_streamCompareLoop_1_03.metadata.DAQ_emu',
-                'DAQ_counter':'test_info.test_streamCompareLoop_1_03.metadata.DAQ_counter',
+                #'DAQ_asic':'test_info.test_streamCompareLoop_1_03.metadata.DAQ_asic',
+                #'DAQ_emu':'test_info.test_streamCompareLoop_1_03.metadata.DAQ_emu',
+                #'DAQ_counter':'test_info.test_streamCompareLoop_1_03.metadata.DAQ_counter',
                 'word_err_count':'test_info.test_streamCompareLoop_1_03.metadata.word_err_count',
                 },
         '1p08': {
-                'DAQ_asic':'test_info.test_streamCompareLoop_1_08.metadata.DAQ_asic',
-                'DAQ_emu':'test_info.test_streamCompareLoop_1_08.metadata.DAQ_emu',
-                'DAQ_counter':'test_info.test_streamCompareLoop_1_08.metadata.DAQ_counter',
+                #'DAQ_asic':'test_info.test_streamCompareLoop_1_08.metadata.DAQ_asic',
+                #'DAQ_emu':'test_info.test_streamCompareLoop_1_08.metadata.DAQ_emu',
+                #'DAQ_counter':'test_info.test_streamCompareLoop_1_08.metadata.DAQ_counter',
                 'word_err_count':'test_info.test_streamCompareLoop_1_08.metadata.word_err_count',
                 },
         }
@@ -352,21 +395,32 @@ class Database:
         pipeline = constructQueryPipeline(query_map, econType=econType)
         cursor = self.db['testOBError'].aggregate(pipeline)
         documents = list(cursor)
-        DAQ_asic = ([
-            doc['latest_data']['DAQ_asic'] for doc in documents 
-            if doc.get('latest_data') is not None and 'DAQ_asic' in doc['latest_data'].keys()
-        ])
+
+        if tray_number is not None:
+            documents = self.filter_by_tray(documents, tray_number)
+
+
+        #DAQ_asic = ([
+        #    doc['latest_data']['DAQ_asic'] for doc in documents 
+        #    if doc.get('latest_data') is not None and 'DAQ_asic' in doc['latest_data'].keys()
+        #])
         
-        DAQ_emu = ([
-            doc['latest_data']['DAQ_emu'] for doc in documents 
-            if doc.get('latest_data') is not None and 'DAQ_emu' in doc['latest_data'].keys()
-        ])
-        DAQ_counter = ([
-            doc['latest_data']['DAQ_counter'] for doc in documents 
-            if doc.get('latest_data') is not None and 'DAQ_counter' in doc['latest_data'].keys()
-        ])
+        #DAQ_emu = ([
+        #    doc['latest_data']['DAQ_emu'] for doc in documents 
+        #    if doc.get('latest_data') is not None and 'DAQ_emu' in doc['latest_data'].keys()
+        #])
+        #DAQ_counter = ([
+        #    doc['latest_data']['DAQ_counter'] for doc in documents 
+        #    if doc.get('latest_data') is not None and 'DAQ_counter' in doc['latest_data'].keys()
+        #])
         word_err_count = ([
             doc['latest_data']['word_err_count'] for doc in documents 
             if doc.get('latest_data') is not None and 'word_err_count' in doc['latest_data'].keys()
         ])
-        return DAQ_asic, DAQ_emu, DAQ_counter, word_err_count
+        chip_number = ([
+            doc['_id'] for doc in documents 
+            if doc.get('latest_data') is not None and 'word_err_count' in doc['latest_data'].keys()
+        ])
+
+
+        return word_err_count,chip_number
