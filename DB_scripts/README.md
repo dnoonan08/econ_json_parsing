@@ -24,7 +24,7 @@ Then the json files will be split into various tables and uploaded into the data
 # Querying the database
 if you would like to query the database from your own local machine use the following ssh commmand
 
-```ssh -f -N -L 27017:localhost:27017 hcalpro@cmsnghcal01```
+```ssh -f -N -L 27017:localhost:27017 chiptest```
 
 note: ```27017``` is the address of the database on ```cmsnghcal01``` if you provide a different value when creating the database please make sure that it matches the command 
 

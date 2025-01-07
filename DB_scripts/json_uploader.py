@@ -53,9 +53,14 @@ def jsonFileUploader(fname, mydatabase):
     non_testing_info = {
         key: data[key] for key in non_testing_keys
     }
+
     for test in data['tests']:
         if 'stream' in test['nodeid']:
-            test['metadata']['snapshots'] = str(test['metadata']['snapshots'])
+            try:
+                test['metadata']['snapshots'] = str(test['metadata']['snapshots'])
+            except:
+                print(f'No metadata in {test["nodeid"]}')
+    
     testingSummary = {
             "summary": {'passed': data['summary']['passed'], 'total':data['summary']['total'], 'collected':data['summary']['collected']},
             "individual_test_outcomes": {
