@@ -8,7 +8,7 @@ from datetime import datetime
 from slack_sdk import WebClient
 
 def send_slack(message):
-    client = WebClient(token="xoxb-6330326503621-6564241964674-WW41OQd73lgPCM8eGgFgJBLI")
+    client = WebClient(token="")
 
     result = client.chat_postMessage(
             channel = "cms-econ-asic", 
@@ -18,7 +18,7 @@ def send_slack(message):
     return result
 
 def send_slack_image(image_path):
-    client = WebClient(token="xoxb-6330326503621-6564241964674-WW41OQd73lgPCM8eGgFgJBLI")
+    client = WebClient(token="")
 
     with open(image_path, "rb") as file_content:
         result = client.files_upload(
