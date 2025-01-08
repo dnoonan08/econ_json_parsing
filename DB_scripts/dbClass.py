@@ -417,10 +417,10 @@ class Database:
             doc['latest_data']['word_err_count'] for doc in documents 
             if doc.get('latest_data') is not None and 'word_err_count' in doc['latest_data'].keys()
         ])
-        chip_number = ([
-            doc['_id'] for doc in documents 
-            if doc.get('latest_data') is not None and 'word_err_count' in doc['latest_data'].keys()
-        ])
+#        chip_number = ([
+#            doc['_id'] for doc in documents 
+#            if doc.get('latest_data') is not None and 'word_err_count' in doc['latest_data'].keys()
+#        ])
 
 
-        return word_err_count,chip_number
+        return word_err_count
