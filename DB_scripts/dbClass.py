@@ -110,6 +110,7 @@ class Database:
         maxwidth = np.array([doc['latest_data']['maxwidth'] for doc in cursor if doc.get('latest_data') is not None and 'maxwidth' in doc['latest_data'].keys()])
         return maxwidth
 
+
     def getVoltageAndCurrent(self, lowerLim=None, upperLim=None, econType = 'ECOND'):
         #This function makes a plot of the PLL Capbank Width
         #if the user provides a range it will plot only over that range
@@ -123,6 +124,11 @@ class Database:
             'None': {
                     'current':'test_info.test_currentdraw_1p2V.metadata.current',
                     'voltage':'test_info.test_currentdraw_1p2V.metadata.voltage',
+                    'current_during_hardreset':'test_info.test_currentdraw_1p2V.metadata.current_during_hardreset',
+                    'current_after_hardreset':'test_info.test_currentdraw_1p2V.metadata.current_after_hardreset',
+                    'current_during_softreset':'test_info.test_currentdraw_1p2V.metadata.current_during_softreset',
+                    'current_after_softreset':'test_info.test_currentdraw_1p2V.metadata.current_after_softreset',
+                    'current_runbit_set':'test_info.test_currentdraw_1p2V.metadata.current_runbit_set',
                     },
         }
         
@@ -130,7 +136,7 @@ class Database:
         pipeline = constructQueryPipeline(query_map, econType=econType, lowerLim = lowerLim, upperLim=upperLim)
         cursor = self.db['testPowerInfo'].aggregate(pipeline)
         documents = list(cursor)
-
+        #main measurements
         current = np.array([
             doc['latest_data']['current'] for doc in documents 
             if doc.get('latest_data') is not None and 'current' in doc['latest_data'].keys()
@@ -140,7 +146,28 @@ class Database:
             doc['latest_data']['voltage'] for doc in documents 
             if doc.get('latest_data') is not None and 'voltage' in doc['latest_data'].keys()
         ])
-        return current, voltage
+        
+        current_during_hardreset = np.array([
+                doc['latest_data']['current_during_hardreset'] for doc in documents 
+                if doc.get('latest_data') is not None and 'current_during_hardreset' in doc['latest_data'].keys()
+            ])
+        current_after_hardreset = np.array([
+            doc['latest_data']['current_after_hardreset'] for doc in documents 
+            if doc.get('latest_data') is not None and 'current_after_hardreset' in doc['latest_data'].keys()
+        ])
+        current_during_softreset = np.array([
+            doc['latest_data']['current_during_softreset'] for doc in documents 
+            if doc.get('latest_data') is not None and 'current_during_softreset' in doc['latest_data'].keys()
+        ])
+        current_after_softreset = np.array([
+            doc['latest_data']['current_after_softreset'] for doc in documents 
+            if doc.get('latest_data') is not None and 'current_after_softreset' in doc['latest_data'].keys()
+        ])
+        current_runbit_set = np.array([
+            doc['latest_data']['current_runbit_set'] for doc in documents 
+            if doc.get('latest_data') is not None and 'current_runbit_set' in doc['latest_data'].keys()
+        ])
+        return current, voltage, current_during_hardreset, current_after_hardreset, current_during_softreset, current_after_softreset, current_runbit_set
 
     def getBISTInfo(self, lowerLim=None, upperLim=None, econType='ECOND',tray_number = None):
         #This function makes a plot of the PLL Capbank Width
