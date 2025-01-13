@@ -18,6 +18,8 @@ def getBistData(flist):
     timestamps = []
     voltages = None
     i=0
+    counter = 0
+
     for f in flist:
         try:
             with open(f) as _file:
@@ -27,9 +29,12 @@ def getBistData(flist):
                 if voltages is None:
                     voltages = this_voltages[:]
                 assert (voltages==this_voltages).all(), "bad voltage values"
+
                 this_pp= np.array(bist_result['ppResults'])
                 this_ob= np.array(bist_result['obResults'])
                 initbist = np.array(bist_result['initBistVal'])
+                if len((initbist==0).all(axis=1)) > 30: raise Exception
+                
                 goodinit.append((initbist==0).all(axis=1))
                 pp.append(np.array([((this_pp>>i)&1) & (this_pp>0) for i in range(12)]))
                 ob.append(np.array([((this_ob>>i)&1) & (this_ob>0) for i in range(12)]))
@@ -37,9 +42,12 @@ def getBistData(flist):
         except:
             print(f'issue in file {f}')
         i += 1
+    print(counter)
     pp = np.array(pp)
     ob = np.array(ob)
+    #print(goodinit)
     goodinit = np.array(goodinit)
+
     timestamps = np.array(timestamps)
 
     return timestamps, voltages, pp.T, ob.T, goodinit

@@ -100,7 +100,6 @@ if __name__ == '__main__':
 
     fig,axs=plt.subplots(figsize=(70,12),ncols=7,nrows=1, layout="constrained")
     for i, (volt) in enumerate(voltages):
-        print(PllCapbankWidth[volt]["hasXrays"]==1)
         axs[i].scatter(PllCapbankWidth[volt]["mradDose"][PllCapbankWidth[volt]["hasXrays"]==1], PllCapbankWidth[volt]["PllCapbankWidth"][PllCapbankWidth[volt]["hasXrays"]==1])
         axs[i].set_title(f"{volt}")
         axs[i].set_ylabel('PllCapbankWidth')

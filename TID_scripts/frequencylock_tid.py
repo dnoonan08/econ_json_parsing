@@ -13,12 +13,20 @@ import matplotlib.pyplot as plt
 def getLockingFreqs(data, voltage, starttime):
     auto_locks = []
     timestamp = []
+    fails = []
     for i in range(len(data)):
         for j in range(len(data[i]['tests'])):
             if 'metadata' in data[i]['tests'][j]:
                 if f"test_pllautolock[{voltage}]" in data[i]['tests'][j]['nodeid']:
-                    auto_locks.append(data[i]['tests'][j]['metadata']['auto_locks'])
-                    timestamp.append(data[i]['tests'][j]['metadata']['timestamp'])
+                    try:
+                        
+                        timestamp.append(data[i]['tests'][j]['metadata']['timestamp'])
+                        auto_locks.append(data[i]['tests'][j]['metadata']['auto_locks'])
+                    except: 
+                        fails.append(i)
+                        continue
+
+    print(fails)
     auto_locks = np.array(auto_locks)
     times = np.array([np.datetime64(x) for x in timestamp])
     #mradDose = Timestamp2MRad(timestamp, starttime)

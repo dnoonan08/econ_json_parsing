@@ -1,6 +1,6 @@
 # Script to plot current versus TID 
 
-from common import get_data, Timestamp2MRad, FNames2MRad, voltages, MYROOT, create_plot_path, get_fnames, Timestamp2XrayBool
+from common import *
 import numpy as np
 import glob
 import matplotlib.colors as mcolors
@@ -24,10 +24,13 @@ def getCurrentValues(data, voltage,starttime):
     current = np.array([x for xs in currents for x in xs])
     hasL1A = np.array([x for xs in hasL1As for x in xs])
     Timestamp = np.array([x for xs in Timestamps for x in xs])
-    time = np.array([np.datetime64(x) for x in Timestamp])
-    mradDose = Timestamp2MRad(Timestamp,starttime)
-    hasXrays = Timestamp2XrayBool(Timestamp)
-    return current, hasL1A, mradDose, time, hasXrays
+    times = np.array([np.datetime64(x) for x in Timestamp])
+    #mradDose = Timestamp2MRad(Timestamp,starttime)
+    #hasXrays = Timestamp2XrayBool(Timestamp)
+    mradDose, hasXrays = datetime_to_TID(times, ObelixDoseRate, xray_start_stop[args.chip])
+    mradDose = np.array(mradDose)
+    hasXrays = np.array(hasXrays)
+    return current, hasL1A, mradDose, times, hasXrays
 
 
 if __name__ == '__main__':

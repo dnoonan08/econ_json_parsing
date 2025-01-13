@@ -142,7 +142,7 @@ if __name__ == '__main__':
         df['TIMESTAMPS'] = timestamps
         df['TEMPERATURE'] = temperatures
 
-        df.to_csv('bist-csv/%s_pp_test%d.csv'%(args.chip,i+1),index=False)
+        df.to_csv('../../bist-study-averages/bist-csv/%s_pp_test%d.csv'%(args.chip,i+1),index=False)
     
     for i in range(v_ob_lowpass.shape[0]):
         df = pd.DataFrame(v_ob_lowpass[i], columns=[f'SRAM {j+1}' for j in range(v_ob_lowpass.shape[2])])

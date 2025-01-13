@@ -54,12 +54,13 @@ if __name__ == '__main__':
     data, starttime = get_data(path)
     fnames = get_fnames(path)
 
+    result = {volt: getAutoCapbank(data,volt,fnames) for volt in voltages}
     AutomaticCapbank = {
         volt: {
-            "AutomaticCapbank": getAutoCapbank(data, volt,fnames)[0],
-            "mradDose": getAutoCapbank(data, volt,fnames)[1],
-            "Timestamps" : getAutoCapbank(data, volt,fnames)[2],
-            "hasXrays" : getAutoCapbank(data, volt,fnames)[3],
+            "AutomaticCapbank": result[volt][0],
+            "mradDose": result[volt][1],
+            "Timestamps" : result[volt][2],
+            "hasXrays" : result[volt][3],
 
         } for volt in voltages
     }

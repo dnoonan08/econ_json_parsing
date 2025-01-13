@@ -13,7 +13,7 @@ parser.add_argument('--test', default='1')  # repo name on github
 args = parser.parse_args()
 
 # Read the CSV file
-df = pd.read_csv('bist-csv/%s_%s_test%s.csv' % (args.chip, args.type, args.test))
+df = pd.read_csv('../../bist-study-averages/bist-csv/%s_%s_test%s.csv' % (args.chip, args.type, args.test))
 
 # Convert TIMESTAMPS to datetime
 df['TIMESTAMPS'] = pd.to_datetime(df['TIMESTAMPS'])
@@ -43,11 +43,19 @@ def find_max_min_sram_values(df, sram_col, window=3):
     else:
         return max_value, max_tid, None, None
 
+def find_min(df, sram_col):
+# Find the maximum value that occurs more than twice
+    value_counts = df[sram_col].value_counts()
+    min_value = value_counts[value_counts > 10].index.min()
+    min_index = df[df[sram_col] == min_value].index[0]
+    min_tid = df.loc[min_index, 'TID']
+    return min_value, min_tid
+
 # Function to save interesting results to CSV
 def save_interesting_results(chip, type, test ,sram_number, first_sram_value, max_value, max_tid, min_value_after_max, min_tid_after_max, xray_on_voltage, tid_10_voltage, min_temp_sram_value):
     results_file = '../../bist-study-averages/results-csv/results_%s_%s.csv'%(type,test)
     new_entry = {
-    'chip': chip,
+    'chip': chip.replace('chip00','').replace('-econd-sw',''),
     'sram_number': sram_number,
     'first_sram_value': first_sram_value,
     'min_temp_sram_value': min_temp_sram_value,
@@ -73,6 +81,44 @@ def save_interesting_results(chip, type, test ,sram_number, first_sram_value, ma
     else:
         results_df = pd.DataFrame([new_entry])
         results_df.to_csv(results_file, index=False)
+
+
+def save_all_results(chip, type, test ,sram_number, first_sram_value, max_value, max_tid,min_value, min_value_after_max, min_tid_after_max, xray_on_voltage, tid_10_voltage, min_temp_sram_value):
+
+    if min_value_after_max:
+        min_value_after_max = round(min_value_after_max,3)
+    results_file = '../../bist-study-averages/results-csv/results_all.csv'
+    new_entry = {
+    'chip': chip.replace('chip00','').replace('-econd',''),
+    'type' : type,
+    'test' : test,
+    'sram_number': sram_number,
+    'Vstart': round(first_sram_value,3),
+    'Vmin_temperature': round(min_temp_sram_value,3),
+    #'max_tid': max_tid,
+    #'min_tid_after_max': min_tid_after_max,
+    'VTID0': round(xray_on_voltage,3),
+    'VTID10': round(tid_10_voltage,3),
+    'Vmin': round(min_value,3),
+    'Vmax': round(max_value,3),
+    'Vmin_after_max': min_value_after_max,
+    'Δ(Vmin_temperature-Vstart)' : round(min_temp_sram_value-first_sram_value,3),
+    'Δ(VTID0-Vmin_temperature)' : round(xray_on_voltage-min_temp_sram_value,3),
+    'Δ(VTID10-VTID0)' : round(tid_10_voltage-xray_on_voltage,3),
+    'Δ(VTID10-Vstart)' : round(tid_10_voltage-min_temp_sram_value,3),
+    'Δ(Vmax-Vstart)' : round(max_value - tid_10_voltage,3),
+    
+    }
+
+    if os.path.exists(results_file):
+        results_df = pd.read_csv(results_file)
+        if not ((results_df['chip'] == chip) & (results_df['sram_number'] == sram_number)).any():
+            results_df = results_df._append(new_entry, ignore_index=True)
+            results_df.to_csv(results_file, index=False)
+    else:
+        results_df = pd.DataFrame([new_entry])
+        results_df.to_csv(results_file, index=False)
+
 
 
 
@@ -127,6 +173,10 @@ for i in range(1, 13):
         ax1.axhline(y=min_value_after_max, color='magenta', linestyle='--', label='Min aftermax (TID=%.2f), voltage = %.2f'%(min_tid_after_max,min_value_after_max))
 
 
+    min_value, min_tid = find_min(df, sram_col)
+    ax1.axhline(y=min_value, color='skyblue', linestyle='--', label='Min (TID=%.2f), voltage = %.2f'%(min_tid,min_value))
+
+
     # Add horizontal line with the first value of the SRAM
     first_sram_value = df[sram_col].iloc[0]
     ax1.axhline(y=first_sram_value, color='brown', linestyle='--', label='Start = %.2f'%first_sram_value)
@@ -150,6 +200,8 @@ for i in range(1, 13):
     # Save interesting results
     if (max_value - first_sram_value) > 0.03:
         save_interesting_results(args.chip, args.type, args.test ,i, first_sram_value, max_value, max_tid, min_value_after_max, min_tid_after_max, xray_on_voltage, tid_10_voltage, min_temp_sram_value)
+    
+    save_all_results(args.chip, args.type, args.test ,i, first_sram_value, max_value, max_tid, min_value,min_value_after_max, min_tid_after_max, xray_on_voltage, tid_10_voltage, min_temp_sram_value)
 
 
     
@@ -184,6 +236,8 @@ for i in range(1, 13):
         axs[i-1].axhline(y=min_value_after_max, color='magenta', linestyle='--', label='Min after Max (TID=%.2f), voltage = %.2f'%(min_tid_after_max,min_value_after_max))
 
 
+    min_value, min_tid = find_min(df, sram_col)
+    axs[i-1].axhline(y=min_value, color='skyblue', linestyle='--', label='Min (TID=%.2f), voltage = %.2f'%(min_tid,min_value))
 
     # Add horizontal line with the first value of the SRAM
     first_sram_value = df[sram_col].iloc[0]
