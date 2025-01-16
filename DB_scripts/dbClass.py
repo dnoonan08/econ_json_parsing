@@ -451,3 +451,285 @@ class Database:
 
 
         return word_err_count
+
+    def getPassFailResults(self, econType = 'ECOND',tray_number = None):
+        #This function returns a dataframe for the testing summary plots prepared by Marko
+        #Please use the econType argument to specify ECOND or ECONT and the function expects a string for this argument
+        voltage_field_map = {
+            'None': {
+                    'individual_test_outcomes':'individual_test_outcomes',
+                    'chipNum':"chip_number",
+                    'Timestamp':'Timestamp',
+                    'IP': 'FPGA-hexa-IP'
+                    },
+        }
+        query_map = voltage_field_map['None']
+        pipeline = constructQueryPipeline(query_map, econType=econType)
+        cursor = self.db['TestSummary'].aggregate(pipeline)
+        documents = list(cursor)
+        testOutcomes = ([
+            doc['latest_data']['individual_test_outcomes'] for doc in documents 
+            if doc.get('latest_data') is not None and 'individual_test_outcomes' in doc['latest_data'].keys()
+        ])
+        chipNums = ([
+            doc['latest_data']['chipNum'] for doc in documents 
+            if doc.get('latest_data') is not None and 'chipNum' in doc['latest_data'].keys()
+        ])
+        Timestamp = ([
+            doc['latest_data']['Timestamp'] for doc in documents 
+            if doc.get('latest_data') is not None and 'Timestamp' in doc['latest_data'].keys()
+        ])
+        IP = ([
+            doc['latest_data']['IP'] for doc in documents 
+            if doc.get('latest_data') is not None and 'IP' in doc['latest_data'].keys()
+        ])
+        return testOutcomes, chipNums, Timestamp, IP
+        
+    def retrieveTestPacketInfo(self, lowerLim=None, upperLim=None, econType = 'ECOND'):
+        #This function makes a plot of the PLL Capbank Width
+        #if the user provides a range it will plot only over that range
+        #if not it plots the capbank width over the whole dataset 
+        #for different voltages use the name argument and please provide a string
+        # 1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
+        #Also use the ECON type argument to make request info for ECOND vs ECONT 
+
+        #note this test does not run at different voltages but I wanted to just have something there so the format of all the functions are uniform
+        voltage_field_map = {
+            'None': {
+                    'test_single_fcsequence_counter_100-None-fc_sequence0-eTx-0-errcnt': 'test_info.test_single_fcsequence_counter_100-None-fc_sequence0-eTx-0.metadata.sc_err_count',
+                    'test_single_fcsequence_counter_100-None-fc_sequence0-eTx-0-wordcnt': 'test_info.test_single_fcsequence_counter_100-None-fc_sequence0-eTx-0.metadata.sc_word_count',
+                    'test_single_fcsequence_counter_100-None-fc_sequence1-eTx-01-errcnt': 'test_info.test_single_fcsequence_counter_100-None-fc_sequence1-eTx-01.metadata.sc_err_count',
+                    'test_single_fcsequence_counter_100-None-fc_sequence1-eTx-01-wordcnt': 'test_info.test_single_fcsequence_counter_100-None-fc_sequence1-eTx-01.metadata.sc_word_count',
+                    'test_single_fcsequence_counter_100-None-fc_sequence2-eTx-012-errcnt': 'test_info.test_single_fcsequence_counter_100-None-fc_sequence2-eTx-012.metadata.sc_err_count',
+                    'test_single_fcsequence_counter_100-None-fc_sequence2-eTx-012-wordcnt': 'test_info.test_single_fcsequence_counter_100-None-fc_sequence2-eTx-012.metadata.sc_word_count',
+                    'test_single_fcsequence_counter_100-None-fc_sequence3-eTx-0123-errcnt': 'test_info.test_single_fcsequence_counter_100-None-fc_sequence3-eTx-0123.metadata.sc_err_count',
+                    'test_single_fcsequence_counter_100-None-fc_sequence3-eTx-0123-wordcnt': 'test_info.test_single_fcsequence_counter_100-None-fc_sequence3-eTx-0123.metadata.sc_word_count',
+                    'test_single_fcsequence_counter_100-None-fc_sequence4-eTx-01234-errcnt': 'test_info.test_single_fcsequence_counter_100-None-fc_sequence4-eTx-01234.metadata.sc_err_count',
+                    'test_single_fcsequence_counter_100-None-fc_sequence4-eTx-01234-wordcnt': 'test_info.test_single_fcsequence_counter_100-None-fc_sequence4-eTx-01234.metadata.sc_word_count',
+                    'test_single_fcsequence_counter_100-None-fc_sequence5-eTx-012345-errcnt': 'test_info.test_single_fcsequence_counter_100-None-fc_sequence5-eTx-012345.metadata.sc_err_count',
+                    'test_single_fcsequence_counter_100-None-fc_sequence5-eTx-012345-wordcnt': 'test_info.test_single_fcsequence_counter_100-None-fc_sequence5-eTx-012345.metadata.sc_word_count',
+                    'test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence6-ZS_c_i_1-errcnt': 'test_info.test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence6-ZS_c_i_1.metadata.sc_err_count',
+                    'test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence6-ZS_c_i_1-wordcnt': 'test_info.test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence6-ZS_c_i_1.metadata.sc_word_count',
+                    'test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence7-ZS_37-errcnt': 'test_info.test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence7-ZS_37.metadata.sc_err_count',
+                    'test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence7-ZS_37-wordcnt': 'test_info.test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence7-ZS_37.metadata.sc_word_count',
+                    'test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence8-ZS_37-errcnt': 'test_info.test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence8-ZS_37.metadata.sc_err_count',
+                    'test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence8-ZS_37-wordcnt': 'test_info.test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence8-ZS_37.metadata.sc_word_count',
+                    'test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence9-ZS_37-errcnt': 'test_info.test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence9-ZS_37.metadata.sc_err_count',
+                    'test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence9-ZS_37-wordcnt': 'test_info.test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence9-ZS_37.metadata.sc_word_count',
+                    'test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence10-pass_thru-errcnt': 'test_info.test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence10-pass_thru.metadata.sc_err_count',
+                    'test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence10-pass_thru-wordcnt': 'test_info.test_single_fcsequence_None-__econd_testvectors_exampleData_testVectorInputs_Random_csv-fc_sequence10-pass_thru.metadata.sc_word_count',
+                    'test_fill_buffer-errcnt0': 'test_info.test_fill_buffer.metadata.sc_err_count_0',
+                    'test_fill_buffer-wordcnt0': 'test_info.test_fill_buffer.metadata.sc_word_count_0',
+                    'test_fill_buffer-errcnt1': 'test_info.test_fill_buffer.metadata.sc_err_count_1',
+                    'test_fill_buffer-wordcnt1': 'test_info.test_fill_buffer.metadata.sc_word_count_1',
+                    'test_fill_buffer-errcnt2': 'test_info.test_fill_buffer.metadata.sc_err_count_2',
+                    'test_fill_buffer-wordcnt2': 'test_info.test_fill_buffer.metadata.sc_word_count_2',
+                    'chipNum':"chip_number"
+                    
+                },
+        }
+        
+        query_map = voltage_field_map['None']
+        pipeline = constructQueryPipeline(query_map, econType=econType, lowerLim=lowerLim, upperLim=upperLim)
+        cursor = self.db['testPacketsInfo'].aggregate(pipeline)
+        documents = list(cursor)
+        # Initialize a dictionary to hold results dynamically
+        result_dict = {}
+        test_single_fcsequence_counter_100_None_fc_sequence0_eTx_0_errcnt = np.array([
+            doc['latest_data']['test_single_fcsequence_counter_100-None-fc_sequence0-eTx-0-errcnt'] if doc.get('latest_data') is not None and 'test_single_fcsequence_counter_100-None-fc_sequence0-eTx-0-errcnt' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        # Loop over each field in the query_map
+        for field_key, field_value in query_map.items():
+            # Extract the relevant field from the documents (handling None and missing keys)
+            result_dict[field_key] = np.array([
+                doc['latest_data'].get(field_key, None) if doc.get('latest_data') else None
+                for doc in documents
+            ])
+        
+        return result_dict
+    def retrieveI2Cerrcnts(self, lowerLim=None, upperLim=None, econType = 'ECOND'):
+        #This function makes a plot of the PLL Capbank Width
+        #if the user provides a range it will plot only over that range
+        #if not it plots the capbank width over the whole dataset 
+        #for different voltages use the name argument and please provide a string
+        # 1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
+        #Also use the ECON type argument to make request info for ECOND vs ECONT 
+        
+        #note this test does not run at different voltages but I wanted to just have something there so the format of all the functions are uniform
+        voltage_field_map = {
+            'None': {
+                    'chipNum':"chip_number",
+                    'n_read_errors_asic':'test_info.test_check_error_counts.metadata.n_read_errors_asic',
+                    'n_read_errors_emulator':'test_info.test_check_error_counts.metadata.n_read_errors_emulator',
+                    'n_write_errors_asic':'test_info.test_check_error_counts.metadata.n_write_errors_asic',
+                    'n_write_errors_emulator':'test_info.test_check_error_counts.metadata.n_write_errors_emulator',
+                    
+                },
+        }
+        
+        query_map = voltage_field_map['None']
+        pipeline = constructQueryPipeline(query_map, econType=econType, lowerLim=lowerLim, upperLim=upperLim)
+        cursor = self.db['testI2CInfo'].aggregate(pipeline)
+        documents = list(cursor)
+        chipNum = np.array([
+            doc['latest_data']['chipNum'] if doc.get('latest_data') is not None and 'chipNum' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        
+        n_read_errors_asic = np.array([
+            doc['latest_data']['n_read_errors_asic'] if doc.get('latest_data') is not None and 'n_read_errors_asic' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        
+        n_read_errors_emulator = np.array([
+            doc['latest_data']['n_read_errors_emulator'] if doc.get('latest_data') is not None and 'n_read_errors_emulator' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        n_write_errors_asic = np.array([
+            doc['latest_data']['n_write_errors_asic'] if doc.get('latest_data') is not None and 'n_write_errors_asic' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        n_write_errors_emulator = np.array([
+            doc['latest_data']['n_write_errors_emulator'] if doc.get('latest_data') is not None and 'n_write_errors_emulator' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        
+        return chipNum, n_read_errors_asic, n_read_errors_emulator, n_write_errors_asic, n_write_errors_emulator 
+
+
+    def testStreamComparison(self, econType = 'ECOND', tray_number = None):
+            #Returns info from the OB error test
+            #This returns DAQ_asic, DAQ_emu, DAQ_counter, and word_err_cnt
+            #This is done for the voltages 0.99, 1.03, and 1.08
+            #specify which voltage you want when calling the function
+            # 0p99 for 0.99, 1p03 for 1.03, and 1p08 for 1.08V
+            
+            voltage_field_map = {
+                'None': {
+                        'word_err_count_0p99':'test_info.test_streamCompareLoop_0_99.metadata.word_err_count',
+                        'word_err_count_1p03':'test_info.test_streamCompareLoop_1_03.metadata.word_err_count',
+                        'word_err_count_1p08':'test_info.test_streamCompareLoop_1_08.metadata.word_err_count',
+                        'word_err_count_1p20':'test_info.test_streamCompareLoop_1_2.metadata.word_err_count',
+                        'chipNum':"chip_number",
+                        
+                }
+            }
+            
+            query_map = voltage_field_map['None']
+            pipeline = constructQueryPipeline(query_map, econType=econType)
+            cursor = self.db['testOBError'].aggregate(pipeline)
+            documents = list(cursor)
+    
+            if tray_number is not None:
+                documents = self.filter_by_tray(documents, tray_number)
+    
+            chipNum = np.array([
+            doc['latest_data']['chipNum'] if doc.get('latest_data') is not None and 'chipNum' in doc['latest_data'].keys() else None for doc in documents 
+            ])
+            word_err_count_0p99 = ([
+            doc['latest_data']['word_err_count_0p99'] if doc.get('latest_data') is not None and 'word_err_count_0p99' in doc['latest_data'].keys() else None for doc in documents 
+            ])
+            word_err_count_1p03 = ([
+            doc['latest_data']['word_err_count_1p03'] if doc.get('latest_data') is not None and 'word_err_count_1p03' in doc['latest_data'].keys() else None for doc in documents 
+            ])
+            word_err_count_1p08 = ([
+            doc['latest_data']['word_err_count_1p08'] if doc.get('latest_data') is not None and 'word_err_count_1p08' in doc['latest_data'].keys() else None for doc in documents 
+            ])
+            word_err_count_1p20 = ([
+            doc['latest_data']['word_err_count_1p20'] if doc.get('latest_data') is not None and 'word_err_count_1p20' in doc['latest_data'].keys() else None for doc in documents 
+            ])
+            return word_err_count_0p99, word_err_count_1p03, word_err_count_1p08, word_err_count_1p20, chipNum
+
+
+
+    def getBISTInfoFull(self, lowerLim=None, upperLim=None, econType='ECOND',tray_number = None):
+            #This function makes a plot of the PLL Capbank Width
+            #if the user provides a range it will plot only over that range
+            #if not it plots the capbank width over the whole dataset 
+            #for different voltages use the name argument and please provide a string
+            # 1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
+            #Also use the ECON type argument to make request info for ECOND vs ECONT 
+            
+            voltage_field_map = {
+                'None': {
+                        'voltages':'test_info.test_bist_full.metadata.voltages',
+                        'bist_results':'test_info.test_bist_full.metadata.bist_results',
+                        'chipNum':'chip_number',
+                        },
+            }
+            
+            query_map = voltage_field_map['None']
+            pipeline = constructQueryPipeline(query_map, econType=econType, lowerLim = lowerLim, upperLim=upperLim)
+            cursor = self.db['testBistInfo'].aggregate(pipeline)
+            documents = list(cursor)
+    
+            if tray_number is not None:
+                documents = self.filter_by_tray(documents, tray_number)
+            voltages = ([
+                doc['latest_data']['voltages'] if doc.get('latest_data') is not None and 'voltages' in doc['latest_data'].keys() else None for doc in documents 
+            ])  
+            bist_results = ([
+                doc['latest_data']['bist_results'] if doc.get('latest_data') is not None and 'bist_results' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+            chipNum = ([
+                doc['latest_data']['chipNum'] if doc.get('latest_data') is not None and 'chipNum' in doc['latest_data'].keys() else None for doc in documents 
+            ])
+            
+            return voltages, bist_results, chipNum
+
+    def getVoltageAndCurrentCSV(self, lowerLim=None, upperLim=None, econType = 'ECOND'):
+        #This function makes a plot of the PLL Capbank Width
+        #if the user provides a range it will plot only over that range
+        #if not it plots the capbank width over the whole dataset 
+        #for different voltages use the name argument and please provide a string
+        # 1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
+        #Also use the ECON type argument to make request info for ECOND vs ECONT 
+
+        #note this test does not run at different voltages but I wanted to just have something there so the format of all the functions are uniform
+        voltage_field_map = {
+            'None': {
+                    'current':'test_info.test_currentdraw_1p2V.metadata.current',
+                    'voltage':'test_info.test_currentdraw_1p2V.metadata.voltage',
+                    'current_during_hardreset':'test_info.test_currentdraw_1p2V.metadata.current_during_hardreset',
+                    'current_after_hardreset':'test_info.test_currentdraw_1p2V.metadata.current_after_hardreset',
+                    'current_during_softreset':'test_info.test_currentdraw_1p2V.metadata.current_during_softreset',
+                    'current_after_softreset':'test_info.test_currentdraw_1p2V.metadata.current_after_softreset',
+                    'current_runbit_set':'test_info.test_currentdraw_1p2V.metadata.current_runbit_set',
+                    'temperature':'test_info.test_currentdraw_1p2V.metadata.zynqTemp',
+                    'chipNum':"chip_number"
+                    },
+        }
+        
+        query_map = voltage_field_map['None']
+        pipeline = constructQueryPipeline(query_map, econType=econType, lowerLim = lowerLim, upperLim=upperLim)
+        cursor = self.db['testPowerInfo'].aggregate(pipeline)
+        documents = list(cursor)
+        #main measurements
+        current = np.array([
+            doc['latest_data']['current'] if doc.get('latest_data') is not None and 'current' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        
+        voltage = np.array([
+            doc['latest_data']['voltage'] if doc.get('latest_data') is not None and 'voltage' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        
+        current_during_hardreset = np.array([
+            doc['latest_data']['current_during_hardreset'] if doc.get('latest_data') is not None and 'current_during_hardreset' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        current_after_hardreset = np.array([
+            doc['latest_data']['current_after_hardreset'] if doc.get('latest_data') is not None and 'current_after_hardreset' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        current_during_softreset = np.array([
+            doc['latest_data']['current_during_softreset'] if doc.get('latest_data') is not None and 'current_during_softreset' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        current_after_softreset = np.array([
+            doc['latest_data']['current_after_softreset'] if doc.get('latest_data') is not None and 'current_after_softreset' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        current_runbit_set = np.array([
+            doc['latest_data']['current_runbit_set'] if doc.get('latest_data') is not None and 'current_runbit_set' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        temperature = np.array([
+            doc['latest_data']['temperature'] if doc.get('latest_data') is not None and 'temperature' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        chipNum = np.array([
+            doc['latest_data']['chipNum'] for doc in documents 
+            if doc.get('latest_data') is not None and 'chipNum' in doc['latest_data'].keys()
+        ])
+        return current, voltage, current_during_hardreset, current_after_hardreset, current_during_softreset, current_after_softreset, current_runbit_set, temperature, chipNum
+
+
