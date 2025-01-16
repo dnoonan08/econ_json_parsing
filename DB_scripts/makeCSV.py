@@ -71,13 +71,17 @@ def stringReplace(word):
     if "]" in word:
         word = word.replace("]", "")
     if "." in word:
-        word = word.replace(".","_")
+        word = word.replace(".","p")
     return word
 
 print('Gathering all data')
 ## Get bist results
 voltages, bist_results, chipNumBIST = db.getBISTInfoFull()
-
+goodIdx = 0
+for i, volt in enumerate(voltages):
+    if volt != None:
+        goodIdx = i
+        break
 ## Get Pass/fail results
 outcomes, chipNums, Timestamp, IP = db.getPassFailResults()
 socket = replaced_arr = ['B' if x == '46' else 'A' for x in IP]
@@ -173,26 +177,26 @@ for i, chipNum in enumerate(chipNumSC):
         
 ## add bist results
 for i, chipNum in enumerate(chipNumBIST):
-    for volt in voltages[0]:
+    for j, volt in enumerate(voltages[goodIdx]):
         ## The if/else statement logic is the same as above 
         if bist_results[i] == None:
-             chip_results[chipNum][f'OBTest_1_Result{stringReplace(str(volt))}'] = None
-             chip_results[chipNum][f'OBTest_2_Result{stringReplace(str(volt))}'] = None
-             chip_results[chipNum][f'OBTest_3_Result{stringReplace(str(volt))}'] = None
-             chip_results[chipNum][f'OBTest_4_Result{stringReplace(str(volt))}'] = None
-             chip_results[chipNum][f'PPTest_1_Result{stringReplace(str(volt))}'] = None
-             chip_results[chipNum][f'PPTest_2_Result{stringReplace(str(volt))}'] = None
-             chip_results[chipNum][f'PPTest_3_Result{stringReplace(str(volt))}'] = None
-             chip_results[chipNum][f'PPTest_4_Result{stringReplace(str(volt))}'] = None
+             chip_results[chipNum][f'OBTest_1_Result_{stringReplace(str(volt))}V'] = None
+             chip_results[chipNum][f'OBTest_2_Result_{stringReplace(str(volt))}V'] = None
+             chip_results[chipNum][f'OBTest_3_Result_{stringReplace(str(volt))}V'] = None
+             chip_results[chipNum][f'OBTest_4_Result_{stringReplace(str(volt))}V'] = None
+             chip_results[chipNum][f'PPTest_1_Result_{stringReplace(str(volt))}V'] = None
+             chip_results[chipNum][f'PPTest_2_Result_{stringReplace(str(volt))}V'] = None
+             chip_results[chipNum][f'PPTest_3_Result_{stringReplace(str(volt))}V'] = None
+             chip_results[chipNum][f'PPTest_4_Result_{stringReplace(str(volt))}V'] = None
         else:
-            chip_results[chipNum][f'OBTest_1_Result{stringReplace(str(volt))}'] = bist_results[i][0]
-            chip_results[chipNum][f'OBTest_2_Result{stringReplace(str(volt))}'] = bist_results[i][1]
-            chip_results[chipNum][f'OBTest_3_Result{stringReplace(str(volt))}'] = bist_results[i][2]
-            chip_results[chipNum][f'OBTest_4_Result{stringReplace(str(volt))}'] = bist_results[i][3]
-            chip_results[chipNum][f'PPTest_1_Result{stringReplace(str(volt))}'] = bist_results[i][4]
-            chip_results[chipNum][f'PPTest_2_Result{stringReplace(str(volt))}'] = bist_results[i][5]
-            chip_results[chipNum][f'PPTest_3_Result{stringReplace(str(volt))}'] = bist_results[i][6]
-            chip_results[chipNum][f'PPTest_4_Result{stringReplace(str(volt))}'] = bist_results[i][7]
+            chip_results[chipNum][f'OBTest_1_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][0]
+            chip_results[chipNum][f'OBTest_2_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][1]
+            chip_results[chipNum][f'OBTest_3_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][2]
+            chip_results[chipNum][f'OBTest_4_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][3]
+            chip_results[chipNum][f'PPTest_1_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][4]
+            chip_results[chipNum][f'PPTest_2_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][5]
+            chip_results[chipNum][f'PPTest_3_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][6]
+            chip_results[chipNum][f'PPTest_4_Result_{stringReplace(str(volt))}v'] = bist_results[i][j][7]
 
 # Now, convert the defaultdict into a pandas DataFrame
 # The outer dictionary (chip names) becomes the columns, and the inner dictionary keys (test names) become rows
