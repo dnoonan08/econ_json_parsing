@@ -196,7 +196,7 @@ for i, chipNum in enumerate(chipNumBIST):
             chip_results[chipNum][f'PPTest_1_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][4]
             chip_results[chipNum][f'PPTest_2_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][5]
             chip_results[chipNum][f'PPTest_3_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][6]
-            chip_results[chipNum][f'PPTest_4_Result_{stringReplace(str(volt))}v'] = bist_results[i][j][7]
+            chip_results[chipNum][f'PPTest_4_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][7]
 
 # Now, convert the defaultdict into a pandas DataFrame
 # The outer dictionary (chip names) becomes the columns, and the inner dictionary keys (test names) become rows
