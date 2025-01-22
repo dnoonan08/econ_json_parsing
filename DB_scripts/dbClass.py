@@ -732,4 +732,147 @@ class Database:
         ])
         return current, voltage, current_during_hardreset, current_after_hardreset, current_during_softreset, current_after_softreset, current_runbit_set, temperature, chipNum
 
+    def getFirstFailureCSV(self, lowerLim=None, upperLim=None, econType='ECOND',tray_number = None):
+        #This function makes a plot of the PLL Capbank Width
+        #if the user provides a range it will plot only over that range
+        #if not it plots the capbank width over the whole dataset 
+        #for different voltages use the name argument and please provide a string
+        # 1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
+        #Also use the ECON type argument to make request info for ECOND vs ECONT 
+        
+        voltage_field_map = {
+            'None': {
+                    'first_failure':'test_info.test_bist.metadata.first_failure',
+                    'chipNum':'chip_number',
+                    },
+        }
+        
+        query_map = voltage_field_map['None']
+        pipeline = constructQueryPipeline(query_map, econType=econType, lowerLim = lowerLim, upperLim=upperLim)
+        cursor = self.db['testBistInfo'].aggregate(pipeline)
+        documents = list(cursor)
+
+        if tray_number is not None:
+            documents = self.filter_by_tray(documents, tray_number)
+
+        first_failure = ([
+                doc['latest_data']['first_failure'] if doc.get('latest_data') is not None and 'first_failure' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+        chipNum = ([
+                doc['latest_data']['chipNum'] if doc.get('latest_data') is not None and 'chipNum' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+        
+        return first_failure, chipNum
+
+    
+    def testIoCSV(self, lowerLim=None, upperLim=None, voltage = 'None', econType = 'ECOND'):
+        #This function makes a plot of the eTX Delay scan Max Width
+        #if the user provides a range it will plot only over that range
+        #if not it plots the capbank width over the whole dataset 
+        #for different voltages use the name argument and please provide a string
+        #1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
+        #Also use the ECON type argument to make request info for ECOND vs ECONT 
+        voltage_field_map = {
+             'None':{
+            'delayscan_maxwidth_1p08':'test_info.test_eTX_delayscan_1_08.metadata.max_width',
+            'delayscan_maxwidth_1p2':'test_info.test_eTX_delayscan_1_2.metadata.max_width', 
+            'delayscan_maxwidth_1p32':'test_info.test_eTX_delayscan_1_032.metadata.max_width',
+            'phasescan_maxwidth_1p08':'test_info.test_ePortRXPRBS_1_08.metadata.maxwidth',
+            'phasescan_maxwidth_1p2':'test_info.test_ePortRXPRBS_1_2.metadata.maxwidth',
+            'phasescan_maxwidth_1p32':'test_info.test_ePortRXPRBS_1_32.metadata.maxwidth',
+            'chipNum':'chip_number',}
+        }
+        if voltage not in voltage_field_map:
+            raise ValueError("Invalid voltage specified. Choose from '1p08', '1p2', '1p32'.")
+        query_map = voltage_field_map[voltage]
+        pipeline = constructQueryPipeline(query_map, econType=econType, lowerLim = lowerLim, upperLim=upperLim)
+        cursor = self.db['testIOInfo'].aggregate(pipeline)
+        documents = list(cursor)
+        delayscan_maxwidth_1p08 = ([
+            doc['latest_data']['delayscan_maxwidth_1p08'] if doc.get('latest_data') is not None and 'delayscan_maxwidth_1p08' in doc['latest_data'].keys() else None for doc in documents 
+        ]) 
+        delayscan_maxwidth_1p2 = ([
+            doc['latest_data']['delayscan_maxwidth_1p2'] if doc.get('latest_data') is not None and 'delayscan_maxwidth_1p2' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        delayscan_maxwidth_1p32 = ([
+            doc['latest_data']['delayscan_maxwidth_1p32'] if doc.get('latest_data') is not None and 'delayscan_maxwidth_1p32' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+
+        phasescan_maxwidth_1p08 = ([
+            doc['latest_data']['phasescan_maxwidth_1p08'] if doc.get('latest_data') is not None and 'phasescan_maxwidth_1p08' in doc['latest_data'].keys() else None for doc in documents 
+        ]) 
+        phasescan_maxwidth_1p2 = ([
+            doc['latest_data']['phasescan_maxwidth_1p2'] if doc.get('latest_data') is not None and 'phasescan_maxwidth_1p2' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        phasescan_maxwidth_1p32 = ([
+            doc['latest_data']['phasescan_maxwidth_1p32'] if doc.get('latest_data') is not None and 'phasescan_maxwidth_1p32' in doc['latest_data'].keys() else None for doc in documents 
+        ])
+        
+        chipNum = ([
+                doc['latest_data']['chipNum'] if doc.get('latest_data') is not None and 'chipNum' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+        return delayscan_maxwidth_1p08, delayscan_maxwidth_1p2, delayscan_maxwidth_1p32, phasescan_maxwidth_1p08, phasescan_maxwidth_1p2, phasescan_maxwidth_1p32, chipNum
+    
+    def testPllCSV(self, lowerLim=None, upperLim=None, voltage = 'None', econType = 'ECOND'):
+        #This function makes a plot of the PLL Capbank Width
+        #if the user provides a range it will plot only over that range
+        #if not it plots the capbank width over the whole dataset 
+        #for different voltages use the name argument and please provide a string
+        #1p08 for 1.08V, 1p2 for 1.2V, 1p32 for 1.32V
+        #Also use the ECON type argument to make request info for ECOND vs ECONT 
+        voltage_field_map = {
+            'None': {
+                    'capbankwidth_1p08':'test_info.test_pll_capbank_width_1_08.metadata.pll_capbank_width',
+                    'capbankwidth_1p2':'test_info.test_pll_capbank_width_1_2.metadata.pll_capbank_width',
+                    'capbankwidth_1p32':'test_info.test_pll_capbank_width_1_32.metadata.pll_capbank_width',
+                    'chipNum':'chip_number',
+                    'minFreq_1p08':'test_info.test_pllautolock_1_08.metadata.min_freq',
+                    'maxFreq_1p08':'test_info.test_pllautolock_1_08.metadata.max_freq',
+                    'minFreq_1p2':'test_info.test_pllautolock_1_2.metadata.min_freq',
+                    'maxFreq_1p2':'test_info.test_pllautolock_1_2.metadata.max_freq',
+                    'minFreq_1p32':'test_info.test_pllautolock_1_32.metadata.min_freq',
+                    'maxFreq_1p32':'test_info.test_pllautolock_1_32.metadata.max_freq',
+            },
+        }
+        if voltage not in voltage_field_map:
+            raise ValueError("Invalid voltage specified. Choose from '1p08', '1p2', '1p32'.")
+        query_map = voltage_field_map[voltage]
+        pipeline = constructQueryPipeline(query_map, econType=econType, lowerLim = lowerLim, upperLim=upperLim)
+        cursor = self.db['testPLLInfo'].aggregate(pipeline)
+        documents = list(cursor)
+        chipNum = ([
+                doc['latest_data']['chipNum'] if doc.get('latest_data') is not None and 'chipNum' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+        ########################################################################################################################
+        capbankwidth_1p08 = ([
+                doc['latest_data']['capbankwidth_1p08'] if doc.get('latest_data') is not None and 'capbankwidth_1p08' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+        capbankwidth_1p2 = ([
+                doc['latest_data']['capbankwidth_1p2'] if doc.get('latest_data') is not None and 'capbankwidth_1p2' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+        capbankwidth_1p32 = ([
+                doc['latest_data']['capbankwidth_1p32'] if doc.get('latest_data') is not None and 'capbankwidth_1p32' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+         ########################################################################################################################
+        minFreq_1p08 = ([
+                doc['latest_data']['minFreq_1p08'] if doc.get('latest_data') is not None and 'minFreq_1p08' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+        minFreq_1p2 = ([
+                doc['latest_data']['minFreq_1p2'] if doc.get('latest_data') is not None and 'minFreq_1p2' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+        minFreq_1p32 = ([
+                doc['latest_data']['minFreq_1p32'] if doc.get('latest_data') is not None and 'minFreq_1p32' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+         ########################################################################################################################
+        maxFreq_1p08 = ([
+                doc['latest_data']['maxFreq_1p08'] if doc.get('latest_data') is not None and 'maxFreq_1p08' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+        maxFreq_1p2 = ([
+                doc['latest_data']['maxFreq_1p2'] if doc.get('latest_data') is not None and 'maxFreq_1p2' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+        maxFreq_1p32 = ([
+                doc['latest_data']['maxFreq_1p32'] if doc.get('latest_data') is not None and 'maxFreq_1p32' in doc['latest_data'].keys() else None for doc in documents 
+            ]) 
+         ########################################################################################################################
+        return chipNum, capbankwidth_1p08, capbankwidth_1p2, capbankwidth_1p32, minFreq_1p08, minFreq_1p2, minFreq_1p32, maxFreq_1p08, maxFreq_1p2, maxFreq_1p32
 

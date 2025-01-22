@@ -103,6 +103,14 @@ results = {key: value for key, value in results.items() if key != 'chipNum'}
 ## get results from I2C read/write errors
 chipNumI2C, n_read_errors_asic, n_read_errors_emulator, n_write_errors_asic, n_write_errors_emulator= db.retrieveI2Cerrcnts()
 
+## get pll results
+chipNumPLL, capbankwidth_1p08, capbankwidth_1p2, capbankwidth_1p32, minFreq_1p08, minFreq_1p2, minFreq_1p32, maxFreq_1p08, maxFreq_1p2, maxFreq_1p32= db.testPllCSV()
+
+## get io results
+delayscan_maxwidth_1p08, delayscan_maxwidth_1p2, delayscan_maxwidth_1p32, phasescan_maxwidth_1p08, phasescan_maxwidth_1p2, phasescan_maxwidth_1p32, chipNumIO = db.testIoCSV()
+
+## get first failure results
+firstFailure, chipNumFF = db.getFirstFailureCSV()
 
 print('writing data to csv')
 ## write results to a dictionary
@@ -197,6 +205,57 @@ for i, chipNum in enumerate(chipNumBIST):
             chip_results[chipNum][f'PPTest_2_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][5]
             chip_results[chipNum][f'PPTest_3_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][6]
             chip_results[chipNum][f'PPTest_4_Result_{stringReplace(str(volt))}V'] = bist_results[i][j][7]
+
+
+
+## Adding in Test_IO info
+for i, chipNum in enumerate(chipNumIO):
+    for etx in range(6):
+        if delayscan_maxwidth_1p08[i] == None: 
+            chip_results[chipNum][f'delayscan_madwidth_1p08_etx_{etx}'] = None
+        else:
+            chip_results[chipNum][f'delayscan_madwidth_1p08_etx_{etx}'] = delayscan_maxwidth_1p08[i][etx]
+            
+        if delayscan_maxwidth_1p2[i] == None: 
+            chip_results[chipNum][f'delayscan_madwidth_1p2_etx_{etx}'] = None
+        else:
+            chip_results[chipNum][f'delayscan_madwidth_1p2_etx_{etx}'] = delayscan_maxwidth_1p2[i][etx]
+
+        if delayscan_maxwidth_1p32[i] == None: 
+            chip_results[chipNum][f'delayscan_madwidth_1p32_etx_{etx}'] = None
+        else:
+            chip_results[chipNum][f'delayscan_madwidth_1p32_etx_{etx}'] = delayscan_maxwidth_1p32[i][etx]
+    for erx in range(12):
+        if phasescan_maxwidth_1p08[i] == None: 
+            chip_results[chipNum][f'phasescan_madwidth_1p08_etx_{erx}'] = None
+        else:
+            chip_results[chipNum][f'phasescan_madwidth_1p08_etx_{erx}'] = phasescan_maxwidth_1p08[i][erx]
+            
+        if phasescan_maxwidth_1p2[i] == None: 
+            chip_results[chipNum][f'phasescan_madwidth_1p2_etx_{erx}'] = None
+        else:
+            chip_results[chipNum][f'phasescan_madwidth_1p2_etx_{erx}'] = phasescan_maxwidth_1p2[i][erx]
+
+        if phasescan_maxwidth_1p32[i] == None: 
+            chip_results[chipNum][f'phasescan_madwidth_1p32_erx_{etx}'] = None
+        else:
+            chip_results[chipNum][f'phasescan_madwidth_1p32_erx_{etx}'] = phasescan_maxwidth_1p32[i][erx]
+
+## Adding in Test_PLL info
+for i, chipNum in enumerate(chipNumPLL):
+    chip_results[chipNum]['capbankwidth_1p08'] = capbankwidth_1p08[i]
+    chip_results[chipNum]['capbankwidth_1p2'] = capbankwidth_1p2[i]
+    chip_results[chipNum]['capbankwidth_1p32'] = capbankwidth_1p32[i]
+    chip_results[chipNum]['minFreq_1p08'] = minFreq_1p08[i]
+    chip_results[chipNum]['minFreq_1p2'] = minFreq_1p2[i]
+    chip_results[chipNum]['minFreq_1p32'] = minFreq_1p32[i]
+    chip_results[chipNum]['maxFreq_1p08'] = minFreq_1p08[i]
+    chip_results[chipNum]['maxFreq_1p2'] = minFreq_1p2[i]
+    chip_results[chipNum]['maxFreq_1p32'] = minFreq_1p32[i]
+
+## Adding in BIST first failure
+for i, chipNum in enumerate(chipNumFF):
+    chip_results[chipNum]['first_failure'] = firstFailure[i]
 
 # Now, convert the defaultdict into a pandas DataFrame
 # The outer dictionary (chip names) becomes the columns, and the inner dictionary keys (test names) become rows
